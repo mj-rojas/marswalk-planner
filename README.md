@@ -22,6 +22,13 @@ the rover could not: map how far the spots extend, choose the best samples and c
 - **Route numbers**: walking time, emergency walkback time, climb and descent, time left at the rock
   in a 6-hour EVA, and an elevation profile you can move along.
 - **Four points of interest**, each with a job: shelter, orientation, safety and science.
+- **EVA timeline**: when the crew reaches each stop and the latest time to start back (05:24 of a
+  6-hour EVA).
+- **HUD preview (walk mode)**: press "Walk the route" and a marker walks the route at the planning
+  speed. A heads-up display shows distance to go, heading, the slope here and in the next 100 m, the
+  walkback time to shelter, the radiation dose so far, and warnings before steep ground and near the
+  no-go wall. It is a simulation of what a suit display could show; it does not use live position.
+- **30-second tour**: `?demo` plays a guided tour of the map with captions.
 - **Radiation**: the dose for the 6-hour EVA (about 0.17 mSv, roughly 8 chest X-rays), from the surface
   dose rate measured by Curiosity's RAD instrument, and the time to reach shelter if a solar storm hits.
 - **Walkability layer**: terrain slope from a 20 m/px elevation model. Green < 10° (easy),
