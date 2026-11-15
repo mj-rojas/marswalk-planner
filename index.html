@@ -19,6 +19,44 @@
     .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px;
                 vertical-align: -1px; }
     .legend small { color: var(--muted); }
+
+    /* EVA plan panel */
+    .plan { position: absolute; top: 76px; left: 12px; z-index: 1000; width: 310px; box-sizing: border-box;
+            max-height: calc(100% - 110px); overflow-y: auto; background: rgba(26,20,18,.92);
+            border: 1px solid #3a2a24; border-radius: 8px; padding: 12px 14px; font-size: 13px; }
+    .plan .kicker { color: var(--accent); font-size: 11px; letter-spacing: 1.2px; font-weight: 600; }
+    .plan h2 { margin: 2px 0 10px; font-size: 16px; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin: 0; }
+    .stats dt { color: var(--muted); font-size: 11px; }
+    .stats dd { margin: 0; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .stats dd small { display: block; font-size: 11px; font-weight: 400; color: var(--muted); }
+    .ok { color: #2ecc71; } .warn { color: #f1c40f; } .bad { color: #e74c3c; }
+    #profile { display: block; width: 100%; height: auto; margin-top: 12px; cursor: crosshair; }
+    #readout { min-height: 30px; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .pois { list-style: none; margin: 10px 0 0; padding: 0; }
+    .pois button { display: flex; gap: 8px; align-items: center; width: 100%; text-align: left; cursor: pointer;
+                   background: none; border: 0; border-top: 1px solid #3a2a24; color: var(--text);
+                   padding: 7px 0; font: inherit; }
+    .pois button:hover { color: var(--accent); }
+    .pois small { display: block; color: var(--muted); font-size: 11px; }
+    .dot { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff;
+           box-sizing: border-box; display: grid; place-items: center; color: #fff; font-size: 11px;
+           font-weight: 700; box-shadow: 0 0 4px rgba(0,0,0,.7); }
+    .plan details { margin-top: 8px; font-size: 11px; color: var(--muted); }
+    .plan details a { color: var(--muted); }
+    .plan details li { margin: 3px 0; }
+    .plan details ul { margin: 6px 0 0; padding-left: 16px; }
+    .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--panel); color: var(--text); }
+    .leaflet-popup-content { font-size: 13px; line-height: 1.45; }
+    .leaflet-popup-content b { color: var(--accent); font-size: 11px; letter-spacing: 1px; }
+    @media (max-width: 700px) {
+      .plan { top: auto; bottom: 0; left: 0; width: 100%; height: 42%; max-height: none;
+              border-radius: 12px 12px 0 0; background: var(--panel); }
+      .leaflet-bottom { bottom: 42%; }
+      .title { left: 12px; right: 12px; top: 8px; }
+      .title p { display: none; }
+      .leaflet-top.leaflet-left { top: 52px; }
+    }
   </style>
 </head>
 <body>
@@ -27,6 +65,19 @@
     <h1>MARSWALK PLANNER · Jezero Crater</h1>
     <p>Route planning for the first human explorers on Mars · NASA data</p>
   </div>
+
+  <aside class="plan" id="plan" hidden>
+    <div class="kicker">EVA 01 · FOLLOW THE LEOPARD SPOTS</div>
+    <h2>Crew base → Cheyava Falls</h2>
+    <dl class="stats" id="stats"></dl>
+    <svg id="profile" viewBox="0 0 300 96" role="img" aria-label="Elevation profile of the route"></svg>
+    <div id="readout">Move over the profile to walk the route.</div>
+    <ul class="pois" id="pois"></ul>
+    <details>
+      <summary>Assumptions and sources</summary>
+      <div id="notes"></div>
+    </details>
+  </aside>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script>
@@ -50,8 +101,8 @@
 
     const map = L.map("map", {
       crs: MARS_CRS,
-      center: [18.445, 77.45],   // Perseverance landing site (Octavia E. Butler Landing)
-      zoom: 13,
+      center: [18.505, 77.315],  // Bright Angel area; the view is fitted to the route once it loads
+      zoom: 14,
       minZoom: 3,
       maxZoom: 19,
       layers: [viking, ctx, hirise],
@@ -64,28 +115,137 @@
       .then(geo => L.geoJSON(geo, { style: { color: "#ffcc33", weight: 2, opacity: 0.85 } }).addTo(route));
 
     // Walkability: slope computed from the 20 m CTX DEM (scripts/make_slope.py).
-    const slope = L.layerGroup();
+    const slope = L.layerGroup().addTo(map);
     const legend = L.control({ position: "bottomright" });
     legend.onAdd = () => {
       const d = L.DomUtil.create("div", "legend");
       d.innerHTML = "<b>Slope for walking</b>" +
         "<div><i style='background:#2ecc71'></i>&lt; 10° easy</div>" +
         "<div><i style='background:#f1c40f'></i>10–20° careful</div>" +
-        "<div><i style='background:#e74c3c'></i>&gt; 20° avoid</div>" +
+        "<div><i style='background:#e74c3c'></i>&gt; 20° over the suit limit</div>" +
         "<small>From CTX DEM, 20 m/px</small>";
       return d;
     };
+    legend.addTo(map);
     fetch("data/slope_meta.json").then(r => r.json()).then(meta =>
       L.imageOverlay("data/slope.png", meta.bounds, { opacity: 0.75 }).addTo(slope));
     map.on("overlayadd", e => { if (e.layer === slope) legend.addTo(map); });
     map.on("overlayremove", e => { if (e.layer === slope) legend.remove(); });
 
+    // EVA plan: base site, walking route and points of interest (scripts/make_route.py).
+    const plan = L.layerGroup().addTo(map);
+    const CLASS_COLOR = s => s >= 20 ? "#e74c3c" : s >= 10 ? "#f1c40f" : "#2ecc71";
+    const POI_COLOR = { base: "#3498db", ramp: "#9b59b6", wall: "#e74c3c", goal: "#e8743b" };
+    const km = m => (m / 1000).toFixed(2) + " km";
+    // Leaflet draws L.circle with Earth's radius even on a custom CRS, so we scale metres to Mars.
+    const marsCircle = (latlng, metres, style) =>
+      L.circle(latlng, { radius: metres * 6371000 / MARS_CRS.R, ...style });
+
+    fetch("data/route.json").then(r => r.json()).then(d => {
+      const pts = d.route, st = d.stats, a = d.assumptions;
+      const ll = p => [p.lat, p.lon];
+
+      // Map: flat zone of the base, straight line (for comparison) and the route coloured by slope.
+      marsCircle(ll(d.base), d.base.flat_radius_m,
+                 { color: "#3498db", weight: 1.5, dashArray: "5 5", fillOpacity: 0.08, interactive: false }).addTo(plan);
+      L.polyline([ll(d.base), ll(d.goal)],
+                 { color: "#fff", weight: 1.5, opacity: 0.7, dashArray: "4 7", interactive: false }).addTo(plan);
+      L.polyline(pts.map(ll), { color: "#000", weight: 7, opacity: 0.55, interactive: false }).addTo(plan);
+      for (let i = 1; i < pts.length; i++)
+        L.polyline([ll(pts[i - 1]), ll(pts[i])],
+                   { color: CLASS_COLOR(Math.max(pts[i - 1].slope_deg, pts[i].slope_deg)), weight: 4,
+                     interactive: false }).addTo(plan);
+
+      // Points of interest: numbered markers on the map and a list in the panel.
+      const list = document.getElementById("pois");
+      d.pois.forEach((p, i) => {
+        const dot = `<span class="dot" style="background:${POI_COLOR[p.id]}">${i + 1}</span>`;
+        const where = p.dist_m === null ? "off the route" : p.dist_m === 0 ? "start" : km(p.dist_m) + " from base";
+        const marker = L.marker(ll(p), { icon: L.divIcon({ html: dot, className: "", iconSize: [22, 22] }),
+                                         zIndexOffset: p.id === "goal" ? 1000 : 0 })
+          .bindPopup(`<b>${p.role.toUpperCase()}</b><br><strong>${p.name}</strong><br>${p.text}` +
+                     `<br><small>${where} · elevation ${p.elev_m} m</small>`, { maxWidth: 260 })
+          .addTo(plan);
+        const li = document.createElement("li");
+        li.innerHTML = `<button type="button">${dot}<span>${p.name}<small>${p.role} · ${where}</small></span></button>`;
+        li.firstChild.onclick = () => { map.flyTo(ll(p), 16, { duration: 0.8 }); marker.openPopup(); };
+        list.appendChild(li);
+      });
+
+      // Numbers. Each one comes from data/route.json, where the script also records its source.
+      const walkback = st.walkback_min <= 30 ? ["ok", "inside the 30 min design case"]
+                     : st.walkback_min <= 60 ? ["warn", "inside the 1 h design case"]
+                     : ["bad", "beyond the 1 h design case"];
+      const slopeClass = st.max_slope_deg >= a.suit_limit_deg ? "bad" : st.max_slope_deg >= a.careful_deg ? "warn" : "ok";
+      document.getElementById("stats").innerHTML = [
+        ["Distance, one way", km(st.length_m), `straight line ${km(st.straight_line_m)}`],
+        ["Walking time", `${st.one_way_min} min`, `${st.one_way_min_slow} min at Apollo 15 pace`],
+        ["Emergency walkback", `<span class="${walkback[0]}">${st.walkback_min} min</span>`, walkback[1]],
+        ["Steepest slope", `<span class="${slopeClass}">${st.max_slope_deg}°</span>`, `suit limit ${a.suit_limit_deg}°`],
+        ["Climb / descent", `+${st.ascent_m} / −${st.descent_m} m`, `${st.pct_easy}% under ${a.careful_deg}°`],
+        ["Time at the rock", `${st.time_on_site_h} h`, `of a ${a.eva_hours} h EVA, round trip ${st.round_trip_h} h`],
+      ].map(([k, v, note]) => `<div><dt>${k}</dt><dd>${v}<small>${note}</small></dd></div>`).join("");
+
+      document.getElementById("notes").innerHTML =
+        `<p>Walking ${a.speed_plan_kmh} km/h (1.7 mph), walkback ${a.speed_walkback_kmh} km/h (2.2 mph), ` +
+        `Apollo 15 pace ${a.speed_slow_kmh} km/h (1 mph). ${a.note} The base rule (flat within ` +
+        `${d.base.flat_radius_m} m) and the ${a.careful_deg}° "careful" class are our own margins.</p><ul>` +
+        d.sources.map(s => `<li>${s.what}: <a href="${s.url}" target="_blank" rel="noopener">${s.cite}</a></li>`).join("") +
+        "</ul>";
+
+      // Elevation profile (SVG). Moving over it moves a marker along the route on the map.
+      const W = 300, H = 96, padL = 4, padR = 4, padT = 14, padB = 16;
+      const elev = pts.map(p => p.elev_m), lo = Math.min(...elev) - 3, hi = Math.max(...elev) + 3;
+      const x = m => padL + (W - padL - padR) * m / st.length_m;
+      const y = e => padT + (H - padT - padB) * (hi - e) / (hi - lo);
+      const xy = p => `${x(p.dist_m).toFixed(1)},${y(p.elev_m).toFixed(1)}`;
+      let svg = `<polygon points="${x(0)},${H - padB} ${pts.map(xy).join(" ")} ${x(st.length_m)},${H - padB}" fill="rgba(232,116,59,.18)"/>`;
+      for (let i = 1; i < pts.length; i++)
+        svg += `<polyline points="${xy(pts[i - 1])} ${xy(pts[i])}" fill="none" stroke-width="2" stroke-linecap="round" ` +
+               `stroke="${CLASS_COLOR(Math.max(pts[i - 1].slope_deg, pts[i].slope_deg))}"/>`;
+      d.pois.forEach((p, i) => {
+        if (p.dist_m === null) return;
+        const near = pts.reduce((b, q) => Math.abs(q.dist_m - p.dist_m) < Math.abs(b.dist_m - p.dist_m) ? q : b);
+        svg += `<circle cx="${x(near.dist_m)}" cy="${y(near.elev_m)}" r="4" fill="${POI_COLOR[p.id]}" stroke="#fff"/>`;
+      });
+      svg += `<text x="${padL}" y="10" fill="#b9a59c" font-size="9">Elevation: ${Math.round(Math.min(...elev))} to ${Math.round(Math.max(...elev))} m</text>` +
+             `<text x="${padL}" y="${H - 4}" fill="#b9a59c" font-size="9">Base</text>` +
+             `<text x="${W - padR}" y="${H - 4}" fill="#b9a59c" font-size="9" text-anchor="end">${km(st.length_m)}</text>` +
+             `<line id="cursor" y1="${padT}" y2="${H - padB}" stroke="#fff" stroke-width="1" visibility="hidden"/>`;
+      const profile = document.getElementById("profile"), readout = document.getElementById("readout");
+      profile.innerHTML = svg;
+      const cursor = document.getElementById("cursor");
+      const walker = L.circleMarker(ll(pts[0]), { radius: 6, color: "#fff", weight: 2, fillColor: "#e8743b", fillOpacity: 1 });
+      const walkTo = clientX => {
+        const box = profile.getBoundingClientRect();
+        const m = Math.min(st.length_m, Math.max(0, ((clientX - box.left) / box.width * W - padL) / (W - padL - padR) * st.length_m));
+        const p = pts.reduce((b, q) => Math.abs(q.dist_m - m) < Math.abs(b.dist_m - m) ? q : b);
+        cursor.setAttribute("x1", x(p.dist_m)); cursor.setAttribute("x2", x(p.dist_m));
+        cursor.setAttribute("visibility", "visible");
+        walker.setLatLng(ll(p)).addTo(plan);
+        readout.textContent = `${km(p.dist_m)} from base · elevation ${p.elev_m} m · slope ${p.slope_deg}° · ` +
+                              `${Math.round(p.dist_m / 1000 / a.speed_plan_kmh * 60)} min`;
+      };
+      profile.addEventListener("pointermove", e => walkTo(e.clientX));
+      profile.addEventListener("pointerdown", e => walkTo(e.clientX));
+
+      // Show the panel and fit the map to the route, leaving room for the panel on wide screens.
+      const panel = document.getElementById("plan");
+      panel.hidden = false;
+      const wide = window.innerWidth > 700;
+      map.fitBounds(L.latLngBounds(pts.map(ll)), {
+        paddingTopLeft: wide ? [panel.offsetWidth + 40, 90] : [30, 70],
+        paddingBottomRight: wide ? [200, 60] : [30, panel.offsetHeight + 30],
+        animate: false,
+      });
+    });
+
     L.control.layers(
       { "Viking color (global)": viking, "MOLA shaded relief (global)": mola },
       { "CTX Jezero (6 m)": ctx, "HiRISE Jezero (25 cm)": hirise,
         "THEMIS thermal (day IR)": themis, "Slope (walkability)": slope,
-        "Perseverance traverse": route },
-      { collapsed: false }
+        "EVA plan (base, route, points)": plan, "Perseverance traverse": route },
+      { collapsed: window.innerWidth <= 700 }
     ).addTo(map);
     L.control.scale({ imperial: false }).addTo(map);
   </script>

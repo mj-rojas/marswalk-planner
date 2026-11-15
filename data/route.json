@@ -1,0 +1,640 @@
+{
+ "goal": {
+  "lat": 18.49748,
+  "lon": 77.30519,
+  "elev_m": -2352.1,
+  "name": "Cheyava Falls"
+ },
+ "base": {
+  "lat": 18.512843,
+  "lon": 77.324279,
+  "elev_m": -2354.7,
+  "flat_radius_m": 200.0,
+  "max_slope_deg": 5.0
+ },
+ "pois": [
+  {
+   "id": "base",
+   "role": "Shelter",
+   "name": "Crew base",
+   "lat": 18.512843,
+   "lon": 77.324279,
+   "elev_m": -2354.7,
+   "dist_m": 0,
+   "text": "Flat ground: every slope within 200 m is under 5°. The planner picked it as the flat site with the easiest walk to the science goal."
+  },
+  {
+   "id": "ramp",
+   "role": "Orientation",
+   "name": "Neretva Vallis ramp",
+   "lat": 18.497996,
+   "lon": 77.314764,
+   "elev_m": -2364.3,
+   "dist_m": 1065.8,
+   "text": "The route drops about 20 m into the ancient river channel through a gap in the valley wall (9.3° at its steepest). The channel is about 400 m wide: follow the foot of its north wall to the west."
+  },
+  {
+   "id": "wall",
+   "role": "Safety",
+   "name": "Valley wall: no-go",
+   "lat": 18.497977,
+   "lon": 77.305859,
+   "elev_m": -2339.5,
+   "dist_m": null,
+   "text": "The straight line from the base crosses 350 m of slopes over 10° and peaks at 20.4° here, over the 20° limit of the suit. A 20 m grid smooths real scarps, so the wall is likely steeper. The route goes around: 234 m longer, but only 48 m over 10°."
+  },
+  {
+   "id": "goal",
+   "role": "Science goal",
+   "name": "Cheyava Falls",
+   "lat": 18.49748,
+   "lon": 77.30519,
+   "elev_m": -2352.1,
+   "dist_m": 1654,
+   "text": "A 1 m rock with \"leopard spots\" (the minerals vivianite and greigite): a potential biosignature found by Perseverance in July 2024. Not confirmed: non-biological origins are not ruled out. Crew task: map how far the spots extend, choose the best samples and carry them back. The last metres climb at up to 15.8°."
+  }
+ ],
+ "stats": {
+  "length_m": 1654,
+  "straight_line_m": 1420,
+  "ascent_m": 32,
+  "descent_m": 29,
+  "elev_start_m": -2354.7,
+  "elev_end_m": -2352.1,
+  "max_slope_deg": 15.8,
+  "pct_easy": 97.1,
+  "pct_careful": 2.9,
+  "pct_over_limit": 0.0,
+  "one_way_min": 36,
+  "one_way_min_slow": 62,
+  "walkback_min": 28,
+  "round_trip_h": 1.2,
+  "time_on_site_h": 4.8,
+  "straight_line_max_slope_deg": 20.4,
+  "straight_line_over_limit_m": 20,
+  "straight_line_careful_m": 350,
+  "route_careful_m": 48,
+  "detour_m": 234
+ },
+ "assumptions": {
+  "suit_limit_deg": 20.0,
+  "careful_deg": 10.0,
+  "speed_plan_kmh": 2.74,
+  "speed_walkback_kmh": 3.54,
+  "speed_slow_kmh": 1.61,
+  "eva_hours": 6.0,
+  "note": "Times use flat-ground speeds and do not slow down on slopes. A 20 m grid hides boulders and small scarps."
+ },
+ "sources": [
+  {
+   "what": "20° slope limit, 6 h EVA, flat landing circle",
+   "cite": "Scoville (2021), Artemis III EVA Mission Capability for de Gerlache-Shackleton Ridge, citing the NASA xEVA System Requirements Document",
+   "url": "https://ntrs.nasa.gov/citations/20210026296"
+  },
+  {
+   "what": "Walking speeds and walkback",
+   "cite": "Ogilvie et al. (2026), Mars Spacesuit Mass Requirements, ICES-2026-127",
+   "url": "https://ntrs.nasa.gov/citations/20260005410"
+  },
+  {
+   "what": "Cheyava Falls science",
+   "cite": "Hurowitz et al. (2025), Nature 645, 332–340",
+   "url": "https://doi.org/10.1038/s41586-025-09413-0"
+  },
+  {
+   "what": "Cheyava Falls, NASA release",
+   "cite": "NASA/JPL, 10 Sept 2025",
+   "url": "https://www.jpl.nasa.gov/news/nasa-says-mars-rover-discovered-potential-biosignature-last-year/"
+  },
+  {
+   "what": "Rover position at the rock",
+   "cite": "NASA/JPL-Caltech, M20 waypoints",
+   "url": "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints.json"
+  },
+  {
+   "what": "Terrain",
+   "cite": "Jezero CTX DTM 20 m, USGS Astrogeology / Mars 2020 TRN",
+   "url": "https://planetarymaps.usgs.gov/mosaic/mars2020_trn/CTX/JEZ_ctx_B_soc_008_DTM_MOLAtopography_DeltaGeoid_20m_Eqc_latTs0_lon0.tif"
+  }
+ ],
+ "route": [
+  {
+   "lat": 18.512843,
+   "lon": 77.324279,
+   "dist_m": 0.0,
+   "elev_m": -2354.7,
+   "slope_deg": 3.0
+  },
+  {
+   "lat": 18.512336,
+   "lon": 77.323773,
+   "dist_m": 41.3,
+   "elev_m": -2353.9,
+   "slope_deg": 3.0
+  },
+  {
+   "lat": 18.512168,
+   "lon": 77.323672,
+   "dist_m": 52.8,
+   "elev_m": -2354.0,
+   "slope_deg": 2.9
+  },
+  {
+   "lat": 18.51183,
+   "lon": 77.323402,
+   "dist_m": 78.0,
+   "elev_m": -2353.9,
+   "slope_deg": 2.8
+  },
+  {
+   "lat": 18.511493,
+   "lon": 77.323132,
+   "dist_m": 103.1,
+   "elev_m": -2353.7,
+   "slope_deg": 2.4
+  },
+  {
+   "lat": 18.511155,
+   "lon": 77.322929,
+   "dist_m": 126.1,
+   "elev_m": -2353.4,
+   "slope_deg": 2.0
+  },
+  {
+   "lat": 18.510818,
+   "lon": 77.322794,
+   "dist_m": 147.5,
+   "elev_m": -2353.1,
+   "slope_deg": 1.5
+  },
+  {
+   "lat": 18.510481,
+   "lon": 77.322659,
+   "dist_m": 168.8,
+   "elev_m": -2353.0,
+   "slope_deg": 1.5
+  },
+  {
+   "lat": 18.510143,
+   "lon": 77.322592,
+   "dist_m": 189.2,
+   "elev_m": -2353.5,
+   "slope_deg": 1.9
+  },
+  {
+   "lat": 18.509806,
+   "lon": 77.322592,
+   "dist_m": 209.2,
+   "elev_m": -2354.2,
+   "slope_deg": 2.6
+  },
+  {
+   "lat": 18.509468,
+   "lon": 77.322592,
+   "dist_m": 229.2,
+   "elev_m": -2355.3,
+   "slope_deg": 3.0
+  },
+  {
+   "lat": 18.509131,
+   "lon": 77.322592,
+   "dist_m": 249.2,
+   "elev_m": -2356.3,
+   "slope_deg": 2.8
+  },
+  {
+   "lat": 18.508794,
+   "lon": 77.322592,
+   "dist_m": 269.2,
+   "elev_m": -2357.2,
+   "slope_deg": 2.7
+  },
+  {
+   "lat": 18.508456,
+   "lon": 77.322592,
+   "dist_m": 289.2,
+   "elev_m": -2358.2,
+   "slope_deg": 2.9
+  },
+  {
+   "lat": 18.508119,
+   "lon": 77.322592,
+   "dist_m": 309.2,
+   "elev_m": -2359.3,
+   "slope_deg": 3.0
+  },
+  {
+   "lat": 18.507781,
+   "lon": 77.322592,
+   "dist_m": 329.2,
+   "elev_m": -2360.3,
+   "slope_deg": 3.4
+  },
+  {
+   "lat": 18.507444,
+   "lon": 77.322524,
+   "dist_m": 349.6,
+   "elev_m": -2361.1,
+   "slope_deg": 3.5
+  },
+  {
+   "lat": 18.507107,
+   "lon": 77.32239,
+   "dist_m": 371.0,
+   "elev_m": -2360.7,
+   "slope_deg": 4.3
+  },
+  {
+   "lat": 18.506769,
+   "lon": 77.322187,
+   "dist_m": 394.0,
+   "elev_m": -2359.9,
+   "slope_deg": 4.5
+  },
+  {
+   "lat": 18.506432,
+   "lon": 77.321917,
+   "dist_m": 419.1,
+   "elev_m": -2359.4,
+   "slope_deg": 4.4
+  },
+  {
+   "lat": 18.506094,
+   "lon": 77.32158,
+   "dist_m": 446.6,
+   "elev_m": -2358.9,
+   "slope_deg": 3.5
+  },
+  {
+   "lat": 18.505757,
+   "lon": 77.321242,
+   "dist_m": 474.2,
+   "elev_m": -2358.4,
+   "slope_deg": 2.8
+  },
+  {
+   "lat": 18.505419,
+   "lon": 77.320905,
+   "dist_m": 501.8,
+   "elev_m": -2357.8,
+   "slope_deg": 2.6
+  },
+  {
+   "lat": 18.505082,
+   "lon": 77.320567,
+   "dist_m": 529.3,
+   "elev_m": -2357.5,
+   "slope_deg": 3.0
+  },
+  {
+   "lat": 18.504745,
+   "lon": 77.32023,
+   "dist_m": 556.9,
+   "elev_m": -2357.2,
+   "slope_deg": 3.9
+  },
+  {
+   "lat": 18.504407,
+   "lon": 77.319893,
+   "dist_m": 584.4,
+   "elev_m": -2356.4,
+   "slope_deg": 4.8
+  },
+  {
+   "lat": 18.50407,
+   "lon": 77.319555,
+   "dist_m": 612.0,
+   "elev_m": -2355.1,
+   "slope_deg": 5.0
+  },
+  {
+   "lat": 18.503732,
+   "lon": 77.319218,
+   "dist_m": 639.6,
+   "elev_m": -2353.7,
+   "slope_deg": 5.4
+  },
+  {
+   "lat": 18.503395,
+   "lon": 77.31888,
+   "dist_m": 667.1,
+   "elev_m": -2351.7,
+   "slope_deg": 5.8
+  },
+  {
+   "lat": 18.503058,
+   "lon": 77.318543,
+   "dist_m": 694.7,
+   "elev_m": -2350.0,
+   "slope_deg": 4.0
+  },
+  {
+   "lat": 18.50272,
+   "lon": 77.318206,
+   "dist_m": 722.3,
+   "elev_m": -2349.3,
+   "slope_deg": 3.4
+  },
+  {
+   "lat": 18.502383,
+   "lon": 77.317868,
+   "dist_m": 749.8,
+   "elev_m": -2348.9,
+   "slope_deg": 3.2
+  },
+  {
+   "lat": 18.502045,
+   "lon": 77.317531,
+   "dist_m": 777.4,
+   "elev_m": -2349.2,
+   "slope_deg": 3.6
+  },
+  {
+   "lat": 18.501708,
+   "lon": 77.317193,
+   "dist_m": 804.9,
+   "elev_m": -2349.2,
+   "slope_deg": 4.2
+  },
+  {
+   "lat": 18.501371,
+   "lon": 77.316923,
+   "dist_m": 830.0,
+   "elev_m": -2349.5,
+   "slope_deg": 4.8
+  },
+  {
+   "lat": 18.501033,
+   "lon": 77.316721,
+   "dist_m": 853.1,
+   "elev_m": -2349.7,
+   "slope_deg": 5.1
+  },
+  {
+   "lat": 18.500696,
+   "lon": 77.316586,
+   "dist_m": 874.5,
+   "elev_m": -2350.0,
+   "slope_deg": 4.8
+  },
+  {
+   "lat": 18.500358,
+   "lon": 77.316451,
+   "dist_m": 895.8,
+   "elev_m": -2350.1,
+   "slope_deg": 4.1
+  },
+  {
+   "lat": 18.500021,
+   "lon": 77.316316,
+   "dist_m": 917.2,
+   "elev_m": -2350.8,
+   "slope_deg": 4.3
+  },
+  {
+   "lat": 18.499683,
+   "lon": 77.316114,
+   "dist_m": 940.2,
+   "elev_m": -2352.1,
+   "slope_deg": 5.3
+  },
+  {
+   "lat": 18.499346,
+   "lon": 77.315844,
+   "dist_m": 965.3,
+   "elev_m": -2354.2,
+   "slope_deg": 6.2
+  },
+  {
+   "lat": 18.499009,
+   "lon": 77.315574,
+   "dist_m": 990.5,
+   "elev_m": -2356.5,
+   "slope_deg": 6.7
+  },
+  {
+   "lat": 18.498671,
+   "lon": 77.315304,
+   "dist_m": 1015.6,
+   "elev_m": -2359.0,
+   "slope_deg": 7.9
+  },
+  {
+   "lat": 18.498334,
+   "lon": 77.315034,
+   "dist_m": 1040.7,
+   "elev_m": -2361.8,
+   "slope_deg": 9.0
+  },
+  {
+   "lat": 18.497996,
+   "lon": 77.314764,
+   "dist_m": 1065.8,
+   "elev_m": -2364.3,
+   "slope_deg": 9.3
+  },
+  {
+   "lat": 18.497659,
+   "lon": 77.314494,
+   "dist_m": 1090.9,
+   "elev_m": -2366.8,
+   "slope_deg": 8.7
+  },
+  {
+   "lat": 18.497322,
+   "lon": 77.314157,
+   "dist_m": 1118.4,
+   "elev_m": -2368.4,
+   "slope_deg": 7.6
+  },
+  {
+   "lat": 18.497052,
+   "lon": 77.313819,
+   "dist_m": 1143.2,
+   "elev_m": -2369.6,
+   "slope_deg": 6.1
+  },
+  {
+   "lat": 18.496849,
+   "lon": 77.313482,
+   "dist_m": 1165.7,
+   "elev_m": -2370.0,
+   "slope_deg": 4.5
+  },
+  {
+   "lat": 18.496714,
+   "lon": 77.313144,
+   "dist_m": 1186.3,
+   "elev_m": -2369.8,
+   "slope_deg": 3.2
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.312807,
+   "dist_m": 1205.7,
+   "elev_m": -2369.3,
+   "slope_deg": 2.3
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.31247,
+   "dist_m": 1224.6,
+   "elev_m": -2368.7,
+   "slope_deg": 2.1
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.312132,
+   "dist_m": 1243.6,
+   "elev_m": -2368.1,
+   "slope_deg": 2.1
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.311795,
+   "dist_m": 1262.6,
+   "elev_m": -2367.5,
+   "slope_deg": 2.0
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.311457,
+   "dist_m": 1281.5,
+   "elev_m": -2366.9,
+   "slope_deg": 2.0
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.31112,
+   "dist_m": 1300.5,
+   "elev_m": -2366.4,
+   "slope_deg": 2.0
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.310783,
+   "dist_m": 1319.5,
+   "elev_m": -2365.9,
+   "slope_deg": 2.1
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.310445,
+   "dist_m": 1338.4,
+   "elev_m": -2365.5,
+   "slope_deg": 2.3
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.310108,
+   "dist_m": 1357.4,
+   "elev_m": -2365.1,
+   "slope_deg": 2.6
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.30977,
+   "dist_m": 1376.4,
+   "elev_m": -2364.7,
+   "slope_deg": 2.9
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.309433,
+   "dist_m": 1395.3,
+   "elev_m": -2364.3,
+   "slope_deg": 3.2
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.309095,
+   "dist_m": 1414.3,
+   "elev_m": -2363.8,
+   "slope_deg": 3.5
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.308758,
+   "dist_m": 1433.3,
+   "elev_m": -2363.3,
+   "slope_deg": 3.5
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.308421,
+   "dist_m": 1452.2,
+   "elev_m": -2362.9,
+   "slope_deg": 3.4
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.308083,
+   "dist_m": 1471.2,
+   "elev_m": -2362.5,
+   "slope_deg": 3.0
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.307746,
+   "dist_m": 1490.2,
+   "elev_m": -2362.3,
+   "slope_deg": 2.7
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.307408,
+   "dist_m": 1509.1,
+   "elev_m": -2362.0,
+   "slope_deg": 2.8
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.307071,
+   "dist_m": 1528.1,
+   "elev_m": -2361.6,
+   "slope_deg": 3.2
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.306734,
+   "dist_m": 1547.1,
+   "elev_m": -2361.2,
+   "slope_deg": 4.1
+  },
+  {
+   "lat": 18.496647,
+   "lon": 77.306396,
+   "dist_m": 1566.0,
+   "elev_m": -2360.7,
+   "slope_deg": 5.3
+  },
+  {
+   "lat": 18.496714,
+   "lon": 77.306059,
+   "dist_m": 1585.4,
+   "elev_m": -2359.7,
+   "slope_deg": 7.3
+  },
+  {
+   "lat": 18.496849,
+   "lon": 77.305721,
+   "dist_m": 1606.0,
+   "elev_m": -2358.3,
+   "slope_deg": 9.7
+  },
+  {
+   "lat": 18.4969,
+   "lon": 77.305553,
+   "dist_m": 1615.9,
+   "elev_m": -2357.9,
+   "slope_deg": 10.5
+  },
+  {
+   "lat": 18.497322,
+   "lon": 77.305047,
+   "dist_m": 1653.8,
+   "elev_m": -2352.1,
+   "slope_deg": 15.8
+  }
+ ]
+}
