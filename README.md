@@ -5,6 +5,9 @@ NASA Space Apps Challenge 2026 · Challenge: **Interplanetary Survival Guide: Ma
 A web map that helps the first human explorers plan safe walks in Jezero Crater, Mars,
 using real NASA orbital imagery, terrain data and Perseverance's actual route.
 
+- **Live map:** https://mj-rojas.github.io/marswalk-planner/
+- **Demo slides (7):** https://mj-rojas.github.io/marswalk-planner/slides/marswalk-planner-demo.pdf
+
 ## What it does (so far)
 
 **EVA 01, "Follow the leopard spots".** The planner sends a crew on foot to Cheyava Falls, the rock
@@ -80,7 +83,9 @@ Map library: [Leaflet](https://leafletjs.com/) 1.9.4 (BSD-2-Clause).
 
 ## AI disclosure
 
-Built with help from Claude (Anthropic) as a coding assistant.
+The code, the texts (this README, the map panel) and the demo slides were written with AI assistance
+(Claude, Anthropic), which also helped find and read the NASA sources. No AI runs inside the map and
+no image is AI-generated: the slides use screenshots of the live map.
 
 ## License
 

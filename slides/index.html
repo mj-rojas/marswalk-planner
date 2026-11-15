@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marswalk Planner – Demo slides</title>
+<meta name="description" content="Marswalk Planner, NASA Space Apps Challenge 2026. Slides written with AI assistance (Claude, Anthropic).">
+<style>
+  :root {
+    --bg: #14100e; --panel: #201916; --line: #3a2e28;
+    --text: #f3ece6; --muted: #b9aca2; --accent: #e8743b;
+    --green: #2ecc71; --yellow: #f1c40f; --red: #e74c3c; --blue: #3498db; --purple: #9b59b6;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { background: #000; }
+  body { font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif; color: var(--text); }
+  .slide {
+    width: 1280px; height: 720px; margin: 0 auto 16px; padding: 56px 64px 44px;
+    background: var(--bg); position: relative; overflow: hidden; zoom: var(--z, 1);
+    display: flex; flex-direction: column;
+  }
+  .kicker { color: var(--accent); font-size: 15px; letter-spacing: .14em; text-transform: uppercase; font-weight: 600; }
+  h1 { font-size: 76px; line-height: 1.02; font-weight: 700; letter-spacing: -.01em; }
+  h2 { font-size: 42px; line-height: 1.12; font-weight: 700; margin: 10px 0 24px; text-wrap: balance; }
+  p, li { font-size: 22px; line-height: 1.42; }
+  .muted { color: var(--muted); }
+  .foot { position: absolute; left: 64px; right: 64px; bottom: 18px; display: flex; justify-content: space-between;
+          font-size: 12.5px; color: #8d8178; }
+  .cols { display: grid; gap: 36px; flex: 1; min-height: 0; }
+  .big p, .big li { font-size: 25px; }
+  .shot { width: 100%; border-radius: 10px; border: 1px solid var(--line); display: block; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; }
+  .num { font-size: 46px; font-weight: 700; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .lab { font-size: 14px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .sub { font-size: 16.5px; color: var(--muted); margin-top: 8px; line-height: 1.35; }
+  .dot { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
+         color: #fff; font-weight: 700; font-size: 17px; flex: none; }
+  ul.plain { list-style: none; padding: 0; display: grid; gap: 16px; }
+  ul.plain li { display: flex; gap: 14px; align-items: flex-start; }
+  b.o { color: var(--accent); font-weight: 600; }
+  a { color: var(--accent); text-decoration: none; }
+
+  /* 1 · title */
+  .title { padding: 0; }
+  .title img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 70% 60%; }
+  .title .veil { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(20,16,14,.96) 0%, rgba(20,16,14,.86) 46%, rgba(20,16,14,.25) 100%); }
+  .title .in { position: relative; padding: 96px 64px 0; max-width: 800px; }
+  .title p.lead { font-size: 28px; line-height: 1.35; margin-top: 22px; }
+  .title .meta { margin-top: 44px; font-size: 18px; color: var(--muted); line-height: 1.7; }
+
+  /* 4 · steps */
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .steps .card { padding: 22px 20px; }
+  .steps .n { color: var(--accent); font-size: 15px; font-weight: 700; letter-spacing: .1em; }
+  .steps h3 { font-size: 23px; margin: 8px 0 10px; }
+  .steps p { font-size: 17px; line-height: 1.4; color: var(--muted); }
+  .steps p b { color: var(--text); font-weight: 600; }
+
+  .classes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 22px; }
+  .classes div { display: flex; align-items: center; gap: 12px; font-size: 19px; }
+  .classes i { width: 44px; height: 14px; border-radius: 7px; flex: none; }
+  .classes span { color: var(--muted); }
+  .classes b { white-space: nowrap; }
+
+  /* 5 · numbers */
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 18px; font-size: 18px; }
+  th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  th { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  td.r, th.r { text-align: right; }
+
+  @page { size: 1280px 720px; margin: 0; }
+  @media print {
+    html { background: none; }
+    .slide { margin: 0; zoom: 1; break-after: page; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 1 -->
+<section class="slide title">
+  <img src="img/overview.jpg" alt="">
+  <div class="veil"></div>
+  <div class="in">
+    <div class="kicker">NASA Space Apps Challenge 2026 · Interplanetary Survival Guide: Martian Map</div>
+    <h1 style="margin-top:22px">Marswalk<br>Planner</h1>
+    <p class="lead">A map that plans a safe walk for the first humans in Jezero Crater, built on real NASA data.</p>
+    <div class="meta">
+      Team Tharsis Labs<br>
+      Live map: <a href="https://mj-rojas.github.io/marswalk-planner/">mj-rojas.github.io/marswalk-planner</a><br>
+      Code: <a href="https://github.com/mj-rojas/marswalk-planner">github.com/mj-rojas/marswalk-planner</a>
+    </div>
+  </div>
+  <div class="foot"><span>Background: the live map (NASA Mars Trek imagery + our slope layer and route)</span><span>1 / 7</span></div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <div class="kicker">The problem</div>
+  <h2>On Mars the crew will walk. A map has to say where that is safe.</h2>
+  <div class="cols big" style="grid-template-columns: 1.1fr 1fr; align-items: center; padding-bottom: 40px;">
+    <ul class="plain" style="gap:26px">
+      <li><span class="dot" style="background:var(--red)">!</span><span>A suited astronaut is required to handle slopes up to <b class="o">20°</b>. Steeper ground is out of bounds.</span></li>
+      <li><span class="dot" style="background:var(--yellow);color:#222">!</span><span>A nominal spacewalk lasts <b class="o">6 hours</b>. Every minute spent walking is a minute not spent on science.</span></li>
+      <li><span class="dot" style="background:var(--blue)">!</span><span>If something fails, the crew walks back. The design case is a <b class="o">30-minute</b> walkback.</span></li>
+    </ul>
+    <div class="card" style="padding:30px 32px">
+      <div class="lab" style="margin-bottom:16px">So the map must answer</div>
+      <p style="margin-bottom:16px">Where do we set up the base?</p>
+      <p style="margin-bottom:16px">Which way do we walk, and how steep is it?</p>
+      <p style="margin-bottom:16px">How long does it take, there and back?</p>
+      <p>What is worth stopping for on the way?</p>
+    </div>
+  </div>
+  <div class="foot"><span>20° and 6 h: NASA xEVA requirements and Artemis III SDT report, cited in Scoville (2021), NTRS 20210026296 · Walkback: Ogilvie et al. (2026), NTRS 20260005410</span><span>2 / 7</span></div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <div class="kicker">EVA 01 · Follow the leopard spots</div>
+  <h2 style="margin-bottom:16px">One walk, fully planned: crew base to Cheyava Falls</h2>
+  <div class="cols" style="grid-template-columns: 2.7fr 1fr; gap: 30px; align-items: center; padding-bottom: 26px;">
+    <img class="shot" src="img/overview.jpg" alt="The live map: slope layer, crew base, planned route and four numbered points">
+    <div>
+      <p style="font-size:21px">Cheyava Falls is the rock where Perseverance found a <b class="o">potential biosignature</b> in 2024. It is not confirmed.</p>
+      <p style="font-size:21px;margin-top:16px">A crew can do what the rover could not: map how far the spots extend, pick the best samples and carry them back.</p>
+      <p class="muted" style="font-size:17px;margin-top:20px">Green, yellow and red show slope. The solid line is the planned route; the dashed line is the straight line it avoids.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Screenshot of the live map · Science: Hurowitz et al. (2025), Nature 645, 332–340 · NASA/JPL release, 10 Sept 2025</span><span>3 / 7</span></div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <div class="kicker">How it works</div>
+  <h2>From NASA elevation data to a walking plan, in four steps</h2>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding-bottom:30px">
+  <div class="steps">
+    <div class="card"><div class="n">01 · TERRAIN</div><h3>Slope grid</h3>
+      <p>The <b>CTX elevation model</b> of Jezero (20 m per pixel, made for Perseverance's landing) becomes a slope value for every cell.</p></div>
+    <div class="card"><div class="n">02 · SHELTER</div><h3>Crew base</h3>
+      <p>Candidates are sites where <b>every slope within 200 m is under 5°</b>. The planner keeps the one with the easiest walk to the goal.</p></div>
+    <div class="card"><div class="n">03 · PATH</div><h3>Route</h3>
+      <p>Least-cost path over the grid. Steeper ground costs more and <b>anything over 20° is forbidden</b>.</p></div>
+    <div class="card"><div class="n">04 · PLAN</div><h3>Numbers</h3>
+      <p>Times from <b>Apollo planning speeds</b>: 2.7 km/h walking, 3.5 km/h emergency walkback, 1.6 km/h as the slow case.</p></div>
+  </div>
+  <div class="classes">
+    <div><i style="background:var(--green)"></i><b>Under 10°</b><span>easy walking</span></div>
+    <div><i style="background:var(--yellow)"></i><b>10–20°</b><span>careful (our own margin)</span></div>
+    <div><i style="background:var(--red)"></i><b>Over 20°</b><span>over the suit limit, forbidden</span></div>
+  </div>
+  <p class="muted" style="margin-top:24px;font-size:19px">Layers on the map: HiRISE (25 cm), CTX (6 m), Viking colour, MOLA relief and THEMIS thermal from NASA Mars Trek, plus Perseverance's real traverse.</p>
+  </div>
+  <div class="foot"><span>DEM: USGS Astrogeology / Mars 2020 TRN · Speeds: Ogilvie et al. (2026) · The 200 m radius and the route cost function are our own choices</span><span>4 / 7</span></div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <div class="kicker">The result</div>
+  <h2 style="margin-bottom:18px">A 36-minute walk that leaves 4.8 hours for science</h2>
+  <div class="grid3">
+    <div class="card"><div class="lab">Distance, one way</div><div class="num">1.65 km</div><div class="sub">97% of it under 10°</div></div>
+    <div class="card"><div class="lab">Walking time</div><div class="num">36 min</div><div class="sub">62 min at the real Apollo 15 pace</div></div>
+    <div class="card"><div class="lab">Emergency walkback</div><div class="num" style="color:var(--green)">28 min</div><div class="sub">inside the 30-minute design case</div></div>
+    <div class="card"><div class="lab">Steepest slope</div><div class="num" style="color:var(--yellow)">15.8°</div><div class="sub">suit limit is 20°</div></div>
+    <div class="card"><div class="lab">Climb / descent</div><div class="num">+32 / −29 m</div><div class="sub">with an elevation profile you can walk along</div></div>
+    <div class="card"><div class="lab">Time at the rock</div><div class="num">4.8 h</div><div class="sub">of a 6 h EVA; round trip 1.2 h</div></div>
+  </div>
+  <table>
+    <tr><th>Why not walk straight?</th><th class="r">Length</th><th class="r">Ground over 10°</th><th class="r">Steepest</th></tr>
+    <tr><td>Straight line</td><td class="r">1.42 km</td><td class="r" style="color:var(--red)">350 m</td><td class="r" style="color:var(--red)">20.4°</td></tr>
+    <tr><td>Planned route</td><td class="r">1.65 km</td><td class="r" style="color:var(--green)">48 m</td><td class="r">15.8°</td></tr>
+  </table>
+  <div class="foot"><span>Computed from the 20 m CTX elevation model. Times use flat-ground speeds and do not slow down on slopes.</span><span>5 / 7</span></div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <div class="kicker">Points of interest</div>
+  <h2 style="margin-bottom:16px">Four stops, each with a job</h2>
+  <div class="cols" style="grid-template-columns: 1fr 1.9fr; align-items: center; padding-bottom: 30px;">
+    <ul class="plain" style="gap:22px">
+      <li><span class="dot" style="background:var(--blue)">1</span><span><b>Crew base</b> · shelter<br><span class="muted" style="font-size:18px">Flat ground, start and end of the walk.</span></span></li>
+      <li><span class="dot" style="background:var(--purple)">2</span><span><b>Neretva Vallis ramp</b> · orientation<br><span class="muted" style="font-size:18px">The gap in the valley wall. 9.3° at its steepest.</span></span></li>
+      <li><span class="dot" style="background:var(--red)">3</span><span><b>Valley wall</b> · safety<br><span class="muted" style="font-size:18px">A no-go zone, next to the goal.</span></span></li>
+      <li><span class="dot" style="background:var(--accent)">4</span><span><b>Cheyava Falls</b> · science<br><span class="muted" style="font-size:18px">The leopard-spot rock and the crew's task there.</span></span></li>
+    </ul>
+    <img class="shot" src="img/cheyava-crop.jpg" alt="The map zoomed on Cheyava Falls with its information card open">
+  </div>
+  <div class="foot"><span>Screenshot of the live map. The yellow line is Perseverance's real traverse (NASA/JPL-Caltech).</span><span>6 / 7</span></div>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <div class="kicker">Data, limits and next steps</div>
+  <h2 style="margin-bottom:18px">Every number is cited, or marked as our own assumption</h2>
+  <div class="cols" style="grid-template-columns: 1.2fr 1fr 1fr; gap: 18px; align-items: stretch; flex: none;">
+    <div class="card">
+      <div class="lab">NASA data used</div>
+      <p style="font-size:19px;line-height:1.5">HiRISE, CTX, Viking, MOLA and THEMIS mosaics (NASA Mars Trek) · Jezero CTX elevation model, 20 m (USGS / Mars 2020) · Perseverance traverse and waypoints (NASA/JPL-Caltech) · EVA requirements and walking speeds (NASA NTRS 20210026296, 20260005410) · Cheyava Falls (NASA/JPL; Hurowitz et al. 2025, <i>Nature</i>)</p>
+    </div>
+    <div class="card">
+      <div class="lab">Known limits</div>
+      <p style="font-size:19px;line-height:1.5">A 20 m grid smooths out boulders and small scarps. Times do not slow down on slopes. The 10° "careful" class, the 200 m base radius and the route cost are our own margins, not NASA numbers.</p>
+    </div>
+    <div class="card">
+      <div class="lab">Next</div>
+      <p style="font-size:19px;line-height:1.5">More walks, starting with the Three Forks sample depot. A safety panel with surface radiation. Perseverance photos at each stop.</p>
+    </div>
+  </div>
+  <p style="margin-top:auto;font-size:24px">Try it: <a href="https://mj-rojas.github.io/marswalk-planner/">mj-rojas.github.io/marswalk-planner</a> · Open source, Apache 2.0</p>
+  <p class="muted" style="margin:12px 0 22px;font-size:16px">AI disclosure: the code, the texts and these slides were written with AI assistance (Claude, Anthropic). The images are screenshots of the live map; none are AI-generated.</p>
+  <div class="foot"><span>Team Tharsis Labs · NASA Space Apps Challenge 2026</span><span>7 / 7</span></div>
+</section>
+
+<script>
+  // Fit the 1280 px slides to narrower screens. Printing ignores this.
+  const fit = () => document.documentElement.style.setProperty("--z", Math.min(1, innerWidth / 1280));
+  fit(); addEventListener("resize", fit);
+</script>
+</body>
+</html>
