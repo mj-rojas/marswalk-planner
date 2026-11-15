@@ -1,0 +1,9 @@
+# Python virtual environment
+.venv/
+__pycache__/
+
+# Raw DEM (9.7 MB). Download it again with the URL in README.md, then run scripts/make_slope.py
+data/*.tif
+
+# Local editor / Claude config
+.claude/

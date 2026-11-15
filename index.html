@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Marswalk Planner – Jezero Crater</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <style>
+    :root { --bg: #0e0b0a; --panel: #1a1412; --text: #f3e9e4; --muted: #b9a59c; --accent: #e8743b; }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+                 font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+    #map { position: absolute; inset: 0; background: #000; }
+    .title { position: absolute; top: 12px; left: 56px; z-index: 1000; background: rgba(26,20,18,.88);
+             padding: 8px 14px; border-radius: 8px; border: 1px solid #3a2a24; }
+    .title h1 { margin: 0; font-size: 17px; letter-spacing: .5px; }
+    .title p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+    .legend { background: rgba(26,20,18,.9); color: var(--text); padding: 8px 10px; border-radius: 8px;
+              border: 1px solid #3a2a24; font-size: 12px; line-height: 1.6; }
+    .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px;
+                vertical-align: -1px; }
+    .legend small { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div class="title">
+    <h1>MARSWALK PLANNER · Jezero Crater</h1>
+    <p>Route planning for the first human explorers on Mars · NASA data</p>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script>
+    // Mars Trek (NASA JPL) serves Mars maps in an equirectangular projection.
+    // Its tile grid (2x1 tiles at zoom 0, origin -180/90) is the same as Leaflet's EPSG:4326 CRS,
+    // so we can use Mars degrees directly as lat/lon.
+    const TREK = "https://trek.nasa.gov/tiles/Mars/EQ";
+    const trekLayer = (name, ext, maxNativeZoom, attribution) =>
+      L.tileLayer(`${TREK}/${name}/1.0.0/default/default028mm/{z}/{y}/{x}.${ext}`,
+                  { maxNativeZoom, maxZoom: 19, attribution, bounds: undefined });
+
+    const viking = trekLayer("Mars_Viking_MDIM21_ClrMosaic_global_232m", "jpg", 7, "Viking MDIM 2.1 · NASA/JPL Mars Trek");
+    const mola   = trekLayer("Mars_MGS_MOLA_ClrShade_merge_global_463m", "jpg", 7, "MGS MOLA shaded relief · NASA/JPL Mars Trek");
+    const ctx    = trekLayer("JEZ_ctx_B_soc_008_orthoMosaic_6m_Eqc_latTs0_lon0", "png", 13, "MRO CTX Jezero 6 m · NASA/JPL/USGS");
+    const hirise = trekLayer("JEZ_hirise_soc_006_orthoMosaic_25cm_Eqc_latTs0_lon0_first_dd", "png", 17, "MRO HiRISE Jezero 25 cm · NASA/JPL/UArizona/USGS");
+    const themis = trekLayer("THEMIS_DayIR_ControlledMosaics_100m_v2_oct2018", "png", 9, "Mars Odyssey THEMIS day IR · NASA/JPL/ASU");
+    themis.setOpacity(0.6);
+
+    // Same projection, but with Mars' mean radius so distances and the scale bar are correct.
+    const MARS_CRS = L.extend({}, L.CRS.EPSG4326, { R: 3389500 });
+
+    const map = L.map("map", {
+      crs: MARS_CRS,
+      center: [18.445, 77.45],   // Perseverance landing site (Octavia E. Butler Landing)
+      zoom: 13,
+      minZoom: 3,
+      maxZoom: 19,
+      layers: [viking, ctx, hirise],
+    });
+
+    // Perseverance's real traverse (NASA MMGIS, downloaded into /data).
+    const route = L.layerGroup().addTo(map);
+    fetch("data/M20_traverse.json")
+      .then(r => r.json())
+      .then(geo => L.geoJSON(geo, { style: { color: "#ffcc33", weight: 2, opacity: 0.85 } }).addTo(route));
+
+    // Walkability: slope computed from the 20 m CTX DEM (scripts/make_slope.py).
+    const slope = L.layerGroup();
+    const legend = L.control({ position: "bottomright" });
+    legend.onAdd = () => {
+      const d = L.DomUtil.create("div", "legend");
+      d.innerHTML = "<b>Slope for walking</b>" +
+        "<div><i style='background:#2ecc71'></i>&lt; 10° easy</div>" +
+        "<div><i style='background:#f1c40f'></i>10–20° careful</div>" +
+        "<div><i style='background:#e74c3c'></i>&gt; 20° avoid</div>" +
+        "<small>From CTX DEM, 20 m/px</small>";
+      return d;
+    };
+    fetch("data/slope_meta.json").then(r => r.json()).then(meta =>
+      L.imageOverlay("data/slope.png", meta.bounds, { opacity: 0.75 }).addTo(slope));
+    map.on("overlayadd", e => { if (e.layer === slope) legend.addTo(map); });
+    map.on("overlayremove", e => { if (e.layer === slope) legend.remove(); });
+
+    L.control.layers(
+      { "Viking color (global)": viking, "MOLA shaded relief (global)": mola },
+      { "CTX Jezero (6 m)": ctx, "HiRISE Jezero (25 cm)": hirise,
+        "THEMIS thermal (day IR)": themis, "Slope (walkability)": slope,
+        "Perseverance traverse": route },
+      { collapsed: false }
+    ).addTo(map);
+    L.control.scale({ imperial: false }).addTo(map);
+  </script>
+</body>
+</html>

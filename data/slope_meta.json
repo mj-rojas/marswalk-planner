@@ -1,0 +1,26 @@
+{
+  "bounds": [
+    [
+      18.211027390963398,
+      77.16046545922367
+    ],
+    [
+      18.721194481872804,
+      77.69897516629472
+    ]
+  ],
+  "thresholds_deg": {
+    "easy": 10.0,
+    "hard": 20.0
+  },
+  "source": "Jezero CTX DTM 20 m (JEZ_ctx_B_soc_008_DTM_MOLAtopography_DeltaGeoid_20m), USGS Astrogeology / Mars 2020 TRN",
+  "stats_pct": {
+    "easy": 85.9,
+    "careful": 12.4,
+    "avoid": 1.7
+  },
+  "elevation_m": [
+    -2710.7,
+    -1515.5
+  ]
+}
