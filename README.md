@@ -22,6 +22,8 @@ the rover could not: map how far the spots extend, choose the best samples and c
 - **Route numbers**: walking time, emergency walkback time, climb and descent, time left at the rock
   in a 6-hour EVA, and an elevation profile you can move along.
 - **Four points of interest**, each with a job: shelter, orientation, safety and science.
+- **Radiation**: the dose for the 6-hour EVA (about 0.17 mSv, roughly 8 chest X-rays), from the surface
+  dose rate measured by Curiosity's RAD instrument, and the time to reach shelter if a solar storm hits.
 - **Walkability layer**: terrain slope from a 20 m/px elevation model. Green < 10° (easy),
   yellow 10–20° (careful), red > 20° (over the suit limit).
 - Mars basemaps and high-resolution imagery of Jezero (HiRISE 25 cm/px, CTX 6 m/px), and
@@ -37,7 +39,14 @@ the rover could not: map how far the spots extend, choose the best samples and c
 | Walking speed | 2.7 km/h (1.7 mph) | Apollo planning speed for walks over 1 hour. Ogilvie et al. (2026), ICES-2026-127, https://ntrs.nasa.gov/citations/20260005410 |
 | Emergency walkback speed | 3.5 km/h (2.2 mph) | Apollo planning speed for walkbacks under 1 hour, same source. Design cases: 30 min or 1 h |
 | Slow pace | 1.6 km/h (1 mph) | Real pace on Apollo 15 (0.7–1.4 mph), same source |
+| Surface radiation | 0.67 mSv/day | Average measured by Curiosity's RAD in Gale crater, Aug 2012 – June 2013, with no major solar storm. NASA news release 13-366 (9 Dec 2013); Hassler et al. (2014), *Science* 343, 1244797 |
+| Chest X-ray | 0.02 mSv | Same NASA release |
+| Career radiation limit | 600 mSv | NASA-STD-3001 Vol. 1 Rev B [V1 4030], in Technical Brief OCHMO-TB-020 Rev E |
 | "Careful" class | 10° | Our own margin: half of the suit limit. Not a NASA number |
+
+Radiation dose = 0.67 mSv/day × 6 h / 24 h = 0.17 mSv, which is 0.17 / 0.02 ≈ 8 chest X-rays and
+0.03% of the career limit. The rate was measured in Gale crater, not in Jezero, and changes with the
+solar cycle.
 
 Limits: times use flat-ground speeds and do not slow down on slopes. A 20 m grid smooths out
 boulders and small scarps, so real local slopes can be steeper than shown. The route cost
@@ -78,6 +87,9 @@ the route and writes `data/route.json`, which the map reads.
 | Cheyava Falls, rock size and minerals | NASA/JPL news release, 10 Sept 2025 | https://www.jpl.nasa.gov/news/nasa-says-mars-rover-discovered-potential-biosignature-last-year/ |
 | Slope limit, EVA length, landing circle | Scoville (2021), NASA NTRS 20210026296 | https://ntrs.nasa.gov/citations/20210026296 |
 | Walking and walkback speeds | Ogilvie et al. (2026), NASA NTRS 20260005410 | https://ntrs.nasa.gov/citations/20260005410 |
+| Surface radiation (Curiosity RAD) | NASA news release 13-366, 9 Dec 2013 | https://www.nasa.gov/press/2013/december/nasa-rover-results-include-first-age-measurement-on-mars-and-help-for-human/ |
+| Surface radiation, paper | Hassler et al. (2014), *Science* 343, 1244797 | https://doi.org/10.1126/science.1244797 |
+| Career radiation limit | NASA-STD-3001 Technical Brief OCHMO-TB-020 Rev E | https://www.nasa.gov/wp-content/uploads/2023/03/radiation-protection-technical-brief-ochmo.pdf |
 
 Map library: [Leaflet](https://leafletjs.com/) 1.9.4 (BSD-2-Clause).
 

@@ -76,6 +76,14 @@
   "route_careful_m": 48,
   "detour_m": 234
  },
+ "safety": {
+  "rate_msv_per_day": 0.67,
+  "eva_dose_msv": 0.17,
+  "chest_xrays": 8,
+  "career_limit_msv": 600,
+  "pct_career_limit": 0.03,
+  "note": "Dose rate measured by Curiosity's RAD in Gale crater (Aug 2012 – June 2013), not in Jezero, in a period with no major solar storm. It changes with the solar cycle. In a solar storm the crew must get back to shelter."
+ },
  "assumptions": {
   "suit_limit_deg": 20.0,
   "careful_deg": 10.0,
@@ -110,6 +118,16 @@
    "what": "Rover position at the rock",
    "cite": "NASA/JPL-Caltech, M20 waypoints",
    "url": "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints.json"
+  },
+  {
+   "what": "Surface radiation (Curiosity RAD) and chest X-ray dose",
+   "cite": "NASA news release 13-366, 9 Dec 2013; Hassler et al. (2014), Science 343, 1244797",
+   "url": "https://www.nasa.gov/press/2013/december/nasa-rover-results-include-first-age-measurement-on-mars-and-help-for-human/"
+  },
+  {
+   "what": "Career radiation limit, 600 mSv",
+   "cite": "NASA-STD-3001 Technical Brief OCHMO-TB-020 Rev E, Design for Ionizing Radiation Protection",
+   "url": "https://www.nasa.gov/wp-content/uploads/2023/03/radiation-protection-technical-brief-ochmo.pdf"
   },
   {
    "what": "Terrain",

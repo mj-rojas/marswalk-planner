@@ -31,6 +31,9 @@
     .stats dd { margin: 0; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
     .stats dd small { display: block; font-size: 11px; font-weight: 400; color: var(--muted); }
     .ok { color: #2ecc71; } .warn { color: #f1c40f; } .bad { color: #e74c3c; }
+    .plan h3 { margin: 10px 0 6px; padding-top: 9px; border-top: 1px solid #3a2a24; color: var(--accent);
+               font-size: 11px; letter-spacing: 1.2px; font-weight: 600; }
+    .plan .fine { margin: 6px 0 0; font-size: 11px; color: var(--muted); }
     #profile { display: block; width: 100%; height: auto; margin-top: 12px; cursor: crosshair; }
     #readout { min-height: 30px; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
     .pois { list-style: none; margin: 10px 0 0; padding: 0; }
@@ -73,6 +76,9 @@
     <svg id="profile" viewBox="0 0 300 96" role="img" aria-label="Elevation profile of the route"></svg>
     <div id="readout">Move over the profile to walk the route.</div>
     <ul class="pois" id="pois"></ul>
+    <h3>SAFETY · RADIATION</h3>
+    <dl class="stats" id="safety"></dl>
+    <p class="fine" id="safetyNote"></p>
     <details>
       <summary>Assumptions and sources</summary>
       <div id="notes"></div>
@@ -185,6 +191,16 @@
         ["Climb / descent", `+${st.ascent_m} / −${st.descent_m} m`, `${st.pct_easy}% under ${a.careful_deg}°`],
         ["Time at the rock", `${st.time_on_site_h} h`, `of a ${a.eva_hours} h EVA, round trip ${st.round_trip_h} h`],
       ].map(([k, v, note]) => `<div><dt>${k}</dt><dd>${v}<small>${note}</small></dd></div>`).join("");
+
+      // Radiation: dose for one EVA, from the surface dose rate measured by Curiosity's RAD.
+      const sf = d.safety;
+      document.getElementById("safety").innerHTML = [
+        ["Dose on this EVA", `${sf.eva_dose_msv} mSv`, `${a.eva_hours} h at ${sf.rate_msv_per_day} mSv/day · about ${sf.chest_xrays} chest X-rays`],
+        ["If a solar storm hits", `<span class="${walkback[0]}">${st.walkback_min} min</span>`, "to reach shelter from the rock"],
+        ["Career limit", `${sf.career_limit_msv} mSv`, `this EVA is ${sf.pct_career_limit}% of it`],
+        ["Measured by", "Curiosity RAD", "Gale crater, 2012–13"],
+      ].map(([k, v, note]) => `<div><dt>${k}</dt><dd>${v}<small>${note}</small></dd></div>`).join("");
+      document.getElementById("safetyNote").textContent = sf.note;
 
       document.getElementById("notes").innerHTML =
         `<p>Walking ${a.speed_plan_kmh} km/h (1.7 mph), walkback ${a.speed_walkback_kmh} km/h (2.2 mph), ` +

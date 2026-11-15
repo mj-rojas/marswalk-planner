@@ -45,6 +45,12 @@ SPEED_WALKBACK_KMH = 2.2 * MPH  # Apollo planning speed for an emergency walkbac
 SPEED_SLOW_KMH = 1.0 * MPH      # real pace on Apollo 15 (0.7–1.4 mph)
 EVA_HOURS = 6.0           # nominal Artemis EVA: 6 hours ± 2 (Artemis III Science Definition Team, via Scoville 2021)
 
+# Radiation. Curiosity's RAD instrument measured an average of 0.67 mSv per day on the surface (Gale crater,
+# Aug 2012 – June 2013, no major solar storm in that period). NASA news release 13-366, 9 Dec 2013.
+RAD_MSV_PER_DAY = 0.67
+CHEST_XRAY_MSV = 0.02     # "a typical chest X-ray is about 0.02 millisievert" (same NASA release)
+CAREER_LIMIT_MSV = 600    # career limit for space flight radiation, NASA-STD-3001 Vol. 1 Rev B [V1 4030]
+
 SOURCES = [
     {"what": "20° slope limit, 6 h EVA, flat landing circle",
      "cite": "Scoville (2021), Artemis III EVA Mission Capability for de Gerlache-Shackleton Ridge, "
@@ -62,6 +68,13 @@ SOURCES = [
     {"what": "Rover position at the rock",
      "cite": "NASA/JPL-Caltech, M20 waypoints",
      "url": "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints.json"},
+    {"what": "Surface radiation (Curiosity RAD) and chest X-ray dose",
+     "cite": "NASA news release 13-366, 9 Dec 2013; Hassler et al. (2014), Science 343, 1244797",
+     "url": "https://www.nasa.gov/press/2013/december/"
+            "nasa-rover-results-include-first-age-measurement-on-mars-and-help-for-human/"},
+    {"what": "Career radiation limit, 600 mSv",
+     "cite": "NASA-STD-3001 Technical Brief OCHMO-TB-020 Rev E, Design for Ionizing Radiation Protection",
+     "url": "https://www.nasa.gov/wp-content/uploads/2023/03/radiation-protection-technical-brief-ochmo.pdf"},
     {"what": "Terrain",
      "cite": "Jezero CTX DTM 20 m, USGS Astrogeology / Mars 2020 TRN",
      "url": "https://planetarymaps.usgs.gov/mosaic/mars2020_trn/CTX/"
@@ -175,6 +188,19 @@ stats = {
     "time_on_site_h": round(EVA_HOURS - 2 * one_way_h, 1),
 }
 
+# ---- Radiation dose for one EVA: dose rate × hours outside ------------------------------------------
+eva_dose = RAD_MSV_PER_DAY * EVA_HOURS / 24
+safety = {
+    "rate_msv_per_day": RAD_MSV_PER_DAY,
+    "eva_dose_msv": round(eva_dose, 2),
+    "chest_xrays": round(eva_dose / CHEST_XRAY_MSV),
+    "career_limit_msv": CAREER_LIMIT_MSV,
+    "pct_career_limit": round(100 * eva_dose / CAREER_LIMIT_MSV, 2),
+    "note": "Dose rate measured by Curiosity's RAD in Gale crater (Aug 2012 – June 2013), not in Jezero, "
+            "in a period with no major solar storm. It changes with the solar cycle. In a solar storm "
+            "the crew must get back to shelter.",
+}
+
 # ---- Why not walk in a straight line? Sample the direct line base → goal every 10 m ---------------
 (br, bc), (gr, gc) = smooth[0], smooth[-1]
 k = int(stats["straight_line_m"] / 10)
@@ -226,6 +252,7 @@ out = {
              "flat_radius_m": BASE_RADIUS_M, "max_slope_deg": BASE_MAX_SLOPE_DEG},
     "pois": pois,
     "stats": stats,
+    "safety": safety,
     "assumptions": {
         "suit_limit_deg": SUIT_LIMIT_DEG, "careful_deg": CAREFUL_DEG,
         "speed_plan_kmh": round(SPEED_PLAN_KMH, 2), "speed_walkback_kmh": round(SPEED_WALKBACK_KMH, 2),
@@ -238,5 +265,5 @@ out = {
 }
 (ROOT / "data" / "route.json").write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
 
-print(json.dumps({k: out[k] for k in ("goal", "base", "pois", "stats")}, indent=2, ensure_ascii=False))
+print(json.dumps({k: out[k] for k in ("goal", "base", "pois", "stats", "safety")}, indent=2, ensure_ascii=False))
 print("base candidates:", int(base_ok.sum()), "cells · route points:", len(route))
