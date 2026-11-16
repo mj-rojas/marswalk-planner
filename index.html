@@ -191,17 +191,24 @@
       text-transform: uppercase; }
     .hud-ctl button:hover, #recBar button:hover { border-color: var(--accent); color: var(--accent); }
 
-    /* Card of the point the walker is passing: fixed on the screen, top left */
-    #hudCard { position: absolute; left: 16px; top: 84px; z-index: 1001; width: 300px; box-sizing: border-box;
-               max-height: calc(100% - 290px); overflow-y: auto; padding: 12px 14px; font-size: 13px; line-height: 1.45;
+    /* Card of the point the walker is passing. The walker is always at the centre of the screen, so the
+       card sits just to its right and travels with it. A line joins the card to its point on the map. */
+    #hudCard { position: absolute; left: calc(50% + 56px); top: 50%; transform: translateY(-60%); z-index: 1001;
+               width: 300px; box-sizing: border-box;
+               max-height: calc(100% - 300px); overflow-y: auto; padding: 12px 14px; font-size: 13px; line-height: 1.45;
                color: var(--text); background: var(--glass); border: 1px solid var(--line);
                border-left: 2px solid var(--accent); border-radius: 3px;
                -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); }
-    #hudCard[hidden] { display: none; }
+    #hudCard[hidden], #hudCard[hidden] + #hudLink { display: none; }
+    #hudLink { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1000; pointer-events: none; }
+    #hudLink line { stroke: var(--accent); stroke-width: 1.5; }
     #hudCard b { color: var(--accent); font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: 1.6px; }
     #hudCard strong { font-size: 15px; }
     #hudCard small { font-size: 11px; }
-    @media (max-width: 700px) { #hudCard { left: 8px; right: 8px; top: 64px; width: auto; max-height: 30%; } }
+    @media (max-width: 700px) {
+      #hudCard { left: 8px; right: 8px; top: 64px; width: auto; max-height: 30%; transform: none; }
+      #hudLink { display: none; }
+    }
 
     /* Tour cards and captions */
     #tourCard { background: rgba(6,7,9,.8); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
@@ -299,7 +306,7 @@
   <aside class="plan plan-b" id="planB" hidden></aside>
 
   <div id="hud" hidden>
-    <div id="hudCard" hidden></div>
+    <div id="hudCard" hidden></div><svg id="hudLink" aria-hidden="true"><line/></svg>
     <div class="hud-top">
       <div class="row"><b>HUD PREVIEW</b><span id="hudClock"></span><span id="hudPhase"></span></div>
       <div id="hudAlert"></div>
@@ -733,6 +740,12 @@
           $("hudCard").hidden = false;
           if (!arrived) walk.cardTimer = setTimeout(() => { $("hudCard").hidden = true; }, 3500);
           if (passing && passing.dist_m > 0) beep(SOUNDS.point);
+        }
+        if (!$("hudCard").hidden && markers[walk.card]) {   // line from the card to its point on the map
+          const box = $("hudCard").getBoundingClientRect(), dot = map.latLngToContainerPoint(markers[walk.card].getLatLng());
+          const line = $("hudLink").firstChild;
+          line.setAttribute("x1", box.left); line.setAttribute("y1", box.top + box.height / 2);
+          line.setAttribute("x2", dot.x); line.setAttribute("y2", dot.y);
         }
         $("hudCells").innerHTML = [
           ["To go", dist(END - m), `${dist(m)} walked`],
