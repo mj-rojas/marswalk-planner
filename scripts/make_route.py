@@ -35,7 +35,7 @@ GOAL = {"lat": 18.49748, "lon": 77.30519}
 # Rover waypoint while it built the Three Forks sample depot (sols 652–686, M20_waypoints.json).
 # It is not the position of each tube: the 10 tubes lie 5 to 15 m apart around it.
 DEPOT = {"lat": 18.45272, "lon": 77.40807}
-WALKBACK_LIMIT_MIN = 30   # shortest walkback design case in Ogilvie et al. (2026)
+WALKBACK_MAX_MIN = 60     # longest emergency walkback design case in Ogilvie et al. (2026)
 
 SUIT_LIMIT_DEG = 20.0     # suited astronaut must walk up, down and across 20° (NASA xEVA SRD, via Scoville 2021)
 CAREFUL_DEG = 10.0        # our own margin: half of the suit limit
@@ -268,7 +268,7 @@ pois = [
      "lat": DEPOT["lat"], "lon": DEPOT["lon"], "elev_m": round(float(z[depot_r, depot_c]), 1), "dist_m": None,
      "text": "Perseverance left 10 sample tubes here (depot completed on 28 January 2023). It is "
              f"{depot_straight_m / 1000:.1f} km from the base in a straight line: an emergency walkback of "
-             f"at least {depot_walkback_min} min, far over the {WALKBACK_LIMIT_MIN} min design case. No-go on "
+             f"at least {depot_walkback_min} min, over the 1 h design case ({WALKBACK_MAX_MIN} min). No-go on "
              "foot from this base: it needs a rover or a closer base. The position is the rover's waypoint "
              "while it built the depot (sols 652–686), not the position of each tube."},
 ]

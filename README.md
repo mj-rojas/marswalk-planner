@@ -24,8 +24,10 @@ the rover could not: map how far the spots extend, choose the best samples and c
 - **Four points of interest**, each with a job: shelter, orientation, safety and science. The science
   stop shows Perseverance's own photo of the rock (NASA Photojournal PIA26368).
 - **GO / NO-GO for any destination**: click any point on the map and the planner computes the walk from
-  the base in your browser, with the same rules as EVA 01. It answers GO or NO-GO and says why: a slope
-  over 20°, or an emergency walkback longer than the 30-minute design case.
+  the base in your browser, with the same rules as EVA 01. It answers with one of three verdicts and
+  says why. GO: emergency walkback of up to 30 minutes. GO with reduced margin: between 30 minutes and
+  1 hour. NO-GO: over 1 hour, or a slope over 20°. The 30-minute and 1-hour walkback design cases come from
+  Ogilvie et al. (2026); using them as the limits between verdicts is our own choice, not a NASA rule.
 - **Two fixed no-go examples**: the valley wall (too steep, 20.4°) and the Three Forks sample depot
   (too far: 5.9 km in a straight line, a walkback of at least 100 minutes). The depot marker is the
   rover's waypoint while it built the depot (sols 652–686), not the position of each tube.

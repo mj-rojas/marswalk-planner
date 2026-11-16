@@ -68,7 +68,7 @@
    "lon": 77.40807,
    "elev_m": -2546.6,
    "dist_m": null,
-   "text": "Perseverance left 10 sample tubes here (depot completed on 28 January 2023). It is 5.9 km from the base in a straight line: an emergency walkback of at least 100 min, far over the 30 min design case. No-go on foot from this base: it needs a rover or a closer base. The position is the rover's waypoint while it built the depot (sols 652–686), not the position of each tube."
+   "text": "Perseverance left 10 sample tubes here (depot completed on 28 January 2023). It is 5.9 km from the base in a straight line: an emergency walkback of at least 100 min, over the 1 h design case (60 min). No-go on foot from this base: it needs a rover or a closer base. The position is the rover's waypoint while it built the depot (sols 652–686), not the position of each tube."
   }
  ],
  "stats": {

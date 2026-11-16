@@ -33,7 +33,9 @@ meta = {
     "north": t.north - r0 * t.dlat, "west": t.west + c0 * t.dlon,   # outer edge of the first cell
     "dlat": t.dlat, "dlon": t.dlon, "cell_m": t.sy,
     "scale": 100, "nodata": NODATA,
-    "walkback_limit_min": 30,   # shortest walkback design case in Ogilvie et al. (2026)
+    # The two emergency walkback design cases in Ogilvie et al. (2026). Using them as the limits between
+    # GO, GO with reduced margin and NO-GO is our own choice.
+    "walkback_limit_min": 30, "walkback_max_min": 60,
 }
 (ROOT / "data" / "slope_grid.json").write_text(json.dumps(meta, indent=1), encoding="utf-8")
 print(json.dumps(meta, indent=1))

@@ -265,7 +265,7 @@
     <h2>Crew base → Cheyava Falls</h2>
     <button type="button" class="walk-btn" id="walkBtn">▶ Walk the route · HUD preview</button>
     <a class="tour-link" href="?demo">or watch the 30-second tour</a>
-    <p class="fine hint">Click any point on the map: the planner answers GO or NO-GO for a walk from the base.</p>
+    <p class="fine hint">Click any point on the map: the planner answers GO, GO with reduced margin, or NO-GO for a walk from the base.</p>
     <dl class="stats" id="stats"></dl>
     <svg id="profile" viewBox="0 0 300 96" role="img" aria-label="Elevation profile of the route"></svg>
     <div id="readout">Move over the profile to walk the route.</div>
@@ -680,7 +680,8 @@
       // Click-to-plan: a walk from the base to any point, computed in the browser with the same rules as
       // scripts/make_route.py (cost = distance × (1 + (slope / 10°)²), nothing over the suit limit).
       // The verdict is NO-GO if the point is too steep, cannot be reached, or the emergency walkback
-      // is longer than the 30 min design case.
+      // is longer than the 1 h design case. Between the 30 min and the 1 h design cases it is GO with
+      // reduced margin. Using the two design cases as verdict limits is our own choice.
       const custom = L.layerGroup().addTo(map);
       let planner = null;   // set when the slope grid has loaded
       Promise.all([fetch("data/slope_grid.json").then(r => r.json()),
@@ -741,17 +742,20 @@
             if (n) length += Math.hypot((pr - smooth[n - 1][0]) * G.cell_m, (pc - smooth[n - 1][1]) * dxRow(Math.floor(pr)));
             steepest = Math.max(steepest, sample(pr, pc));
           });
-          const walkback = length / 1000 / a.speed_walkback_kmh * 60, go = walkback <= G.walkback_limit_min;
-          return { go, length, steepest, walkback, walk: length / 1000 / a.speed_plan_kmh * 60, limit: G.walkback_limit_min,
+          const walkback = length / 1000 / a.speed_walkback_kmh * 60, short = G.walkback_limit_min, long = G.walkback_max_min;
+          const level = walkback <= short ? "go" : walkback <= long ? "margin" : "nogo", go = level !== "nogo";
+          return { go, level, length, steepest, walkback, walk: length / 1000 / a.speed_plan_kmh * 60, short, long,
                    line: smooth.map(([pr, pc]) => [G.north - (pr + 0.5) * G.dlat, G.west + (pc + 0.5) * G.dlon]),
-                   why: go ? `Walkback inside the ${G.walkback_limit_min} min design case and every slope under ${a.suit_limit_deg}°.`
-                           : `Emergency walkback of ${Math.round(walkback)} min, over the ${G.walkback_limit_min} min design case.` };
+                   why: level === "go" ? `Walkback inside the ${short} min design case and every slope under ${a.suit_limit_deg}°.`
+                      : level === "margin" ? `Emergency walkback of ${Math.round(walkback)} min: over the ${short} min design case, inside the 1 h one.`
+                      : `Emergency walkback of ${Math.round(walkback)} min, over the 1 h design case.` };
         };
       });
-      const drawPlan = (res, layer = custom) => {   // route to a destination, green for GO and red for NO-GO
+      const LEVEL = { go: ["ok", "#4ade80", "GO"], margin: ["warn", "#facc15", "GO · REDUCED MARGIN"], nogo: ["bad", "#f87171", "NO-GO"] };
+      const drawPlan = (res, layer = custom) => {   // route to a destination: green, yellow or red by verdict
         if (!res.line) return;
         L.polyline(res.line, { color: "#05060a", weight: 7, opacity: 0.5, interactive: false }).addTo(layer);
-        L.polyline(res.line, { color: res.go ? "#4ade80" : "#f87171", weight: 2.5, dashArray: "6 6", interactive: false }).addTo(layer);
+        L.polyline(res.line, { color: LEVEL[res.level][1], weight: 2.5, dashArray: "6 6", interactive: false }).addTo(layer);
       };
 
       // Pointer to the far point (Three Forks), which is outside the first view.
@@ -768,18 +772,19 @@
         custom.clearLayers();
         const res = planner(e.latlng);
         if (!res) return;
-        drawPlan(res);
+        const [tag, , label] = LEVEL[res.level || "nogo"];
         const cell = (k, v, note) => `<div><dt>${k}</dt><dd>${v}<small>${note}</small></dd></div>`;
         L.popup({ maxWidth: 270, ...clearOfPanels() }).setLatLng(res.line ? res.line[res.line.length - 1] : e.latlng).setContent(
-          `<b>YOUR DESTINATION</b><div class="verdict ${res.go ? "ok" : "bad"}">${res.go ? "GO" : "NO-GO"}</div>${res.why}` +
+          `<b>YOUR DESTINATION</b><div class="verdict ${tag}"${label.length > 6 ? ' style="font-size:15px"' : ""}>${label}</div>${res.why}` +
           (res.line ? '<dl class="stats">' +
             cell("Distance", km(res.length), "one way, from the base") +
             cell("Walking time", `${Math.round(res.walk)} min`, `at ${a.speed_plan_kmh.toFixed(1)} km/h`) +
-            cell("Emergency walkback", `<span class="${res.go ? "ok" : "bad"}">${Math.round(res.walkback)} min</span>`, `limit ${res.limit} min`) +
+            cell("Emergency walkback", `<span class="${tag}">${Math.round(res.walkback)} min</span>`, `design cases ${res.short} and ${res.long} min`) +
             cell("Steepest slope", `<span class="${slopeTag(res.steepest)}">${res.steepest.toFixed(1)}°</span>`, `suit limit ${a.suit_limit_deg}°`) +
             "</dl>" : "") +
           '<small class="poi-credit" style="margin-top:6px">Computed in your browser with the same rules as EVA 01. Flat-ground speeds; 20 m grid.</small>'
         ).on("remove", () => custom.clearLayers()).openOn(map);
+        drawPlan(res);   // after the card opens: closing the previous card clears the previous route
       });
 
       // Tour (index.html?demo): a guided tour of about 28 seconds with captions. It shows the same
@@ -803,13 +808,13 @@
         [13, () => {   // one GO and two NO-GO: the wall (too steep) and Three Forks (too far)
           const depot = d.pois.find(p => p.id === "depot"), wall = d.pois.find(p => p.id === "wall");
           const far = planner && planner(L.latLng(depot.lat, depot.lon));
-          const tip = (p, kind, direction, text) =>
-            L.tooltip({ permanent: true, direction, offset: [0, direction === "top" ? -14 : 14], className: "tip " + kind })
+          const tip = (p, kind, direction, offset, text) =>   // labels open to the right, clear of the left panel
+            L.tooltip({ permanent: true, direction, offset, className: "tip " + kind })
               .setLatLng(ll(p)).setContent(text).addTo(custom);
           if (far) drawPlan(far);
-          tip(d.goal, "go", "bottom", `GO · ${st.walkback_min} min to shelter`);
-          tip(wall, "nogo", "top", `NO-GO · ${st.straight_line_max_slope_deg}° slope`);
-          tip(depot, "nogo", "top", `NO-GO · ${far && far.line ? Math.round(far.walkback) : "100+"} min to shelter`);
+          tip(d.goal, "go", "right", [16, 18], `GO · ${st.walkback_min} min to shelter`);
+          tip(wall, "nogo", "right", [16, -18], `NO-GO · ${st.straight_line_max_slope_deg}° slope`);
+          tip(depot, "nogo", "left", [-16, 0], `NO-GO · ${far && far.line ? Math.round(far.walkback) : "100+"} min to shelter`);
           fitRoute(1.2, [depot]);
           caption("It also says when not to go: too steep, or too far from shelter.");
         }],

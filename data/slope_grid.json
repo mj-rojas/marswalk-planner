@@ -8,5 +8,6 @@
  "cell_m": 20.0,
  "scale": 100,
  "nodata": 65535,
- "walkback_limit_min": 30
+ "walkback_limit_min": 30,
+ "walkback_max_min": 60
 }
