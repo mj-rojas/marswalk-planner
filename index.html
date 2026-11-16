@@ -91,6 +91,7 @@
     #tourCard h2 { margin: 16px 0 12px; font-size: clamp(34px, 7vw, 92px); line-height: 1; }
     #tourCard p { margin: 6px 0; font-size: clamp(15px, 2.2vw, 30px); }
     #tourCard .m { color: var(--muted); font-size: clamp(12px, 1.5vw, 20px); margin-top: 14px; }
+    #tourGo { width: auto; margin: 28px auto 0; padding: 12px 26px; font-size: 13px; }
     #tourCap { position: absolute; left: 50%; bottom: 48px; transform: translateX(-50%); z-index: 1050;
                width: max-content; max-width: min(940px, calc(100% - 32px)); box-sizing: border-box;
                padding: 10px 18px; border-radius: 8px; background: rgba(0,0,0,.8); color: #fff;
@@ -190,6 +191,18 @@
       text-transform: uppercase; }
     .hud-ctl button:hover, #recBar button:hover { border-color: var(--accent); color: var(--accent); }
 
+    /* Card of the point the walker is passing: fixed on the screen, top left */
+    #hudCard { position: absolute; left: 16px; top: 84px; z-index: 1001; width: 300px; box-sizing: border-box;
+               max-height: calc(100% - 290px); overflow-y: auto; padding: 12px 14px; font-size: 13px; line-height: 1.45;
+               color: var(--text); background: var(--glass); border: 1px solid var(--line);
+               border-left: 2px solid var(--accent); border-radius: 3px;
+               -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); }
+    #hudCard[hidden] { display: none; }
+    #hudCard b { color: var(--accent); font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: 1.6px; }
+    #hudCard strong { font-size: 15px; }
+    #hudCard small { font-size: 11px; }
+    @media (max-width: 700px) { #hudCard { left: 8px; right: 8px; top: 64px; width: auto; max-height: 30%; } }
+
     /* Tour cards and captions */
     #tourCard { background: rgba(6,7,9,.8); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
     #tourCard .k { font-family: var(--mono); font-weight: 500; letter-spacing: 3px; font-size: clamp(9px, 1vw, 14px); }
@@ -286,6 +299,7 @@
   <aside class="plan plan-b" id="planB" hidden></aside>
 
   <div id="hud" hidden>
+    <div id="hudCard" hidden></div>
     <div class="hud-top">
       <div class="row"><b>HUD PREVIEW</b><span id="hudClock"></span><span id="hudPhase"></span></div>
       <div id="hudAlert"></div>
@@ -295,6 +309,7 @@
       <svg id="hudProfile" viewBox="0 0 600 44" preserveAspectRatio="none" role="img" aria-label="Progress along the route"></svg>
       <div class="hud-ctl">
         <span id="hudNote"></span>
+        <button type="button" id="hudSound">Sound on</button>
         <button type="button" id="hudPlay">Pause</button>
         <button type="button" id="hudSpeed"></button>
         <button type="button" id="hudExit">Exit</button>
@@ -399,6 +414,7 @@
       // Points of interest: numbered markers on the map and a list in the panel.
       const list = document.getElementById("pois");
       let pending = null;
+      const markers = {};   // point id → marker, so the walk can open each card as it passes
       const farRoute = L.layerGroup().addTo(map);   // red route to a point that is out of range
       d.pois.forEach((p, i) => {
         const dot = `<span class="dot${p.id === "goal" ? " pulse" : ""}" style="--c:${POI_COLOR[p.id]}">${i + 1}</span>`;
@@ -413,6 +429,7 @@
                        // On a phone the panel covers the lower part of the map: keep the card short and scrollable.
                        maxHeight: window.innerWidth <= 700 ? Math.round(window.innerHeight * 0.58 - 110) : undefined })
           .addTo(plan);
+        markers[p.id] = marker;
         if (p.id === "depot") {   // while its card is open, show the walk the planner rejects
           marker.on("popupopen", () => { const far = planner && planner(L.latLng(p.lat, p.lon));
                                          farRoute.clearLayers(); if (far) drawPlan(far, farRoute); });
@@ -527,6 +544,85 @@
       // speed and the HUD shows what a crew member needs during the walk. Every value is computed
       // from the same route data and the same sourced numbers as the panel.
       const $ = id => document.getElementById(id);
+
+      // Sounds: short tones made in code with the Web Audio API (no audio files). Each one plays once,
+      // when its event happens. On by default; the "Sound" button in the HUD turns it off.
+      // Browsers only let a page play sound after the first click, so nothing plays before that.
+      const sound = { on: true, unlocked: false, ctx: null, out: null };
+      window.addEventListener("pointerdown", () => { sound.unlocked = true; if (sound.on) audio(); }, { once: true, capture: true });
+      const audio = () => {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!sound.ctx && AC) {
+          sound.ctx = new AC();
+          sound.out = sound.ctx.createGain();
+          sound.out.gain.value = 0.6;
+          sound.out.connect(sound.ctx.destination);
+        }
+        if (sound.ctx && sound.ctx.state === "suspended") sound.ctx.resume().catch(() => {});
+        return sound.ctx;
+      };
+      const SOUNDS = {   // each note: [frequency Hz, start s, length s, end frequency (glide), wave]
+        start:    [[440, 0, 0.3, 880]],                       // the walk starts: short rising tone
+        point:    [[520, 0, 0.14, 640]],                      // passing a point of the route: short blip
+        caution:  [[660, 0, 0.18]],                           // yellow warning: one soft beep
+        nogoNear: [[880, 0, 0.09], [880, 0.15, 0.09]],        // no-go zone near: two quick beeps
+        arrive:   [[660, 0, 0.16], [990, 0.19, 0.32]],        // arrival: two tones, the second higher
+        go:       [[784, 0, 0.32]],                           // verdict GO: one clean tone
+        nogo:     [[220, 0, 0.42, 196, "triangle"]],          // verdict NO-GO: one low tone
+      };
+      const beep = notes => {
+        const ctx = sound.on && sound.unlocked && audio();
+        if (!ctx) return;
+        notes.forEach(([f, at, len, glide, wave]) => {
+          const osc = ctx.createOscillator(), gain = ctx.createGain(), t0 = ctx.currentTime + at;
+          osc.type = wave || "sine";
+          osc.frequency.setValueAtTime(f, t0);
+          if (glide) osc.frequency.linearRampToValueAtTime(glide, t0 + len);
+          gain.gain.setValueAtTime(0.0001, t0);
+          gain.gain.exponentialRampToValueAtTime(0.3, t0 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t0 + len);
+          osc.connect(gain); gain.connect(sound.out);
+          osc.start(t0); osc.stop(t0 + len + 0.03);
+        });
+      };
+      // Background: a quiet, muffled wind made in code (filtered noise with slow gusts). It is a synthetic
+      // sound, not a recording from Mars. It plays during the walk and the tour.
+      let wind = null;
+      const setWind = on => {
+        const ctx = sound.on && sound.unlocked && audio();
+        if (on && ctx && !wind) {
+          const n = ctx.sampleRate * 6, buffer = ctx.createBuffer(1, n, ctx.sampleRate), data = buffer.getChannelData(0);
+          const edge = ctx.sampleRate * 0.08;   // fade the ends so the loop has no click
+          for (let i = 0, last = 0; i < n; i++) {
+            last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02;                      // brown noise
+            data[i] = last * 3.5 * Math.min(1, i / edge, (n - 1 - i) / edge);
+          }
+          const src = ctx.createBufferSource(), low = ctx.createBiquadFilter(), gain = ctx.createGain();
+          const gust = ctx.createOscillator(), depth = ctx.createGain();
+          src.buffer = buffer; src.loop = true;
+          low.type = "lowpass"; low.frequency.value = 360;                              // muffled: no high pitches
+          gust.frequency.value = 0.11; depth.gain.value = 150;                           // one slow gust every 9 s
+          gust.connect(depth); depth.connect(low.frequency);
+          gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.4, ctx.currentTime + 1.5);
+          src.connect(low); low.connect(gain); gain.connect(sound.out);
+          src.start(); gust.start();
+          wind = { src, gust, gain };
+        } else if (!on && wind) {
+          const old = wind, now = sound.ctx.currentTime;
+          wind = null;
+          old.gain.gain.cancelScheduledValues(now);
+          old.gain.gain.setTargetAtTime(0.0001, now, 0.25);
+          setTimeout(() => { old.src.stop(); old.gust.stop(); }, 1500);
+        }
+      };
+      const setSound = on => {
+        sound.on = on;
+        if (on) audio();
+        $("hudSound").textContent = on ? "Sound on" : "Sound off";
+        setWind(on && document.body.classList.contains("walking"));
+      };
+      $("hudSound").onclick = () => setSound(!sound.on);
       const END = pts[pts.length - 1].dist_m;
       const RAD = Math.PI / 180, M_PER_DEG = RAD * MARS_CRS.R;
       const metres = (p, q) => Math.hypot((q.lat - p.lat) * M_PER_DEG,
@@ -619,6 +715,25 @@
           : hazard && hazard.d < 150 ? `<span class="bad">No-go zone ${dist(hazard.d)} away: ${hazard.p.name.split(":")[0].toLowerCase()}</span>`
           : near ? `${near.role}: ${near.name}`
           : `<span class="ok">Route clear · slopes under ${a.careful_deg}°</span>`;
+        // One sound when a warning appears, not while it lasts.
+        const kind = arrived ? "arrive"
+                   : pos.slope_deg >= a.careful_deg || maxAhead.slope_deg >= a.careful_deg ? "caution"
+                   : hazard && hazard.d < 150 ? "nogoNear" : "";
+        if (kind !== walk.kind) { walk.kind = kind; if (kind) beep(SOUNDS[kind]); }
+        // Cards: when the walker reaches a point (base, ramp, the no-go wall, the goal) its card shows in
+        // a fixed place of the screen, so it does not slide away with the map. It stays a few seconds;
+        // the card of the goal stays until the walk ends. The wall is announced well before the goal.
+        const reach = Math.max(90, walk.k * a.speed_plan_kmh / 3.6 * 0.75);
+        const passing = stops.find(p => p.id !== "goal" && Math.abs(p.dist_m - m) < reach);
+        const cardId = arrived ? "goal" : passing ? passing.id : hazard && hazard.d < Math.max(300, 2.5 * reach) ? hazard.p.id : "";
+        if (cardId && cardId !== walk.card && markers[cardId]) {
+          walk.card = cardId;
+          clearTimeout(walk.cardTimer);
+          $("hudCard").innerHTML = markers[cardId].getPopup().getContent();
+          $("hudCard").hidden = false;
+          if (!arrived) walk.cardTimer = setTimeout(() => { $("hudCard").hidden = true; }, 3500);
+          if (passing && passing.dist_m > 0) beep(SOUNDS.point);
+        }
         $("hudCells").innerHTML = [
           ["To go", dist(END - m), `${dist(m)} walked`],
           ["Heading", `${String(Math.round(walk.heading)).padStart(3, "0")}° ${COMPASS[Math.round(walk.heading / 45) % 8]}`,
@@ -636,7 +751,13 @@
         if (!walk.playing) return;
         walk.m = Math.min(END, walk.m + (ts - walk.last) / 1000 * walk.k * a.speed_plan_kmh / 3.6);
         walk.last = ts;
-        if (walk.m >= END) walk.playing = false;
+        if (walk.m >= END) {   // arrived: stay a few seconds on the goal, then go back to the map by itself
+          walk.playing = false;
+          if (!document.body.classList.contains("tour")) {
+            $("hudNote").textContent = "Arrived. Back to the map in a few seconds.";
+            walk.back = setTimeout(() => { if (walk.m >= END && !$("hud").hidden) exitWalk(); }, 7000);
+          }
+        }
         renderHud();
         if (walk.playing) requestAnimationFrame(frame);
       };
@@ -647,20 +768,27 @@
         document.body.classList.add("walking");
         $("hud").hidden = false;
         $("hudNote").textContent = `Simulated walk at the planning speed, ${a.speed_plan_kmh.toFixed(1)} km/h.`;
-        walk.m = 0; walk.playing = false;
+        clearTimeout(walk.back); clearTimeout(walk.cardTimer);
+        $("hudCard").hidden = true;
+        walk.m = 0; walk.playing = false; walk.kind = ""; walk.card = null;
+        setWind(true);
         arrow.addTo(map);
         map.setView(ll(pts[0]), WALK_ZOOM, { animate: false });
         renderHud();
         preload();
         // Start when the first view has loaded (or after 4 s), unless the user has already left the mode.
         let started = false;
-        const go = () => { if (!started && !$("hud").hidden && !walk.playing) { started = true; play(); } };
+        const go = () => { if (!started && !$("hud").hidden && !walk.playing) { started = true; beep(SOUNDS.start); play(); } };
         if (opts.now) return setTimeout(go, 300);
         hirise.once("load", () => setTimeout(go, 700));
         setTimeout(go, 4000);
       };
       const exitWalk = () => {
         walk.playing = false;
+        clearTimeout(walk.back);
+        clearTimeout(walk.cardTimer);
+        $("hudCard").hidden = true;
+        if (!document.body.classList.contains("tour")) setWind(false);
         document.body.classList.remove("walking");
         $("hud").hidden = true;
         arrow.remove();
@@ -669,7 +797,8 @@
       $("walkBtn").onclick = () => startWalk();
       $("hudExit").onclick = exitWalk;
       $("hudPlay").onclick = () => {
-        if (walk.m >= END) { walk.m = 0; play(); }
+        if (walk.m >= END) { clearTimeout(walk.back); walk.m = 0; walk.kind = ""; walk.card = null;
+                             $("hudNote").textContent = ""; beep(SOUNDS.start); play(); }
         else if (walk.playing) { walk.playing = false; renderHud(); }
         else play();
       };
@@ -785,6 +914,7 @@
           '<small class="poi-credit" style="margin-top:6px">Computed in your browser with the same rules as EVA 01. Flat-ground speeds; 20 m grid.</small>'
         ).on("remove", () => custom.clearLayers()).openOn(map);
         drawPlan(res);   // after the card opens: closing the previous card clears the previous route
+        beep(SOUNDS[{ go: "go", margin: "caution" }[res.level] || "nogo"]);
       });
 
       // Tour (index.html?demo): a guided tour of about 28 seconds with captions. It shows the same
@@ -792,13 +922,14 @@
       const card = html => { $("tourCard").hidden = !html; $("tourCard").innerHTML = html || ""; };
       const caption = text => { $("tourCap").hidden = !text; $("tourCap").textContent = text || ""; };
       const showSlope = on => { if (on) { slope.addTo(map); legend.addTo(map); } else { slope.remove(); legend.remove(); } };
+      const TITLE_CARD = '<div class="k">NASA SPACE APPS CHALLENGE 2026 · INTERPLANETARY SURVIVAL GUIDE: MARTIAN MAP</div>' +
+        "<h2>Marswalk Planner</h2><p>A map that plans a safe walk for the first humans on Mars</p>" +
+        '<p class="m">Team Tharsis Labs · Manuel Rojas</p>';
       const TOUR = [  // [second, what happens]
         [0, () => {
           showPanels(false); showSlope(false); plan.remove();
           map.setView([18.47, 77.40], 12, { animate: false });
-          card('<div class="k">NASA SPACE APPS CHALLENGE 2026 · INTERPLANETARY SURVIVAL GUIDE: MARTIAN MAP</div>' +
-               "<h2>Marswalk Planner</h2><p>A map that plans a safe walk for the first humans on Mars</p>" +
-               '<p class="m">Team Tharsis Labs · Manuel Rojas</p>');
+          card(TITLE_CARD);
         }],
         [3, () => { card(null); caption("The first crew in Jezero Crater will explore on foot."); }],
         [6, () => { showSlope(true); fitRoute(1.4);
@@ -816,6 +947,7 @@
           tip(wall, "nogo", "right", [16, -18], `NO-GO · ${st.straight_line_max_slope_deg}° slope`);
           tip(depot, "nogo", "left", [-16, 0], `NO-GO · ${far && far.line ? Math.round(far.walkback) : "100+"} min to shelter`);
           fitRoute(1.2, [depot]);
+          beep(SOUNDS.go); setTimeout(() => beep(SOUNDS.nogo), 1300);
           caption("It also says when not to go: too steep, or too far from shelter.");
         }],
         [17, () => { custom.clearLayers(); startWalk({ k: 300, now: true });
@@ -826,11 +958,12 @@
                "<p>Next: mineral maps · weather · AI briefings · HUD on the visor</p>" +
                '<p class="m">mj-rojas.github.io/marswalk-planner · open source · Team Tharsis Labs</p>');
         }],
-        [30, () => { card(null); exitWalk(); document.body.classList.remove("tour"); }],
+        [30, () => { card(null); exitWalk(); document.body.classList.remove("tour"); setWind(false); }],
       ];
       const runTour = () => {
         if (!$("hud").hidden) exitWalk();
         document.body.classList.add("tour");
+        setWind(true);
         preload();
         TOUR.forEach(([t, fn]) => setTimeout(fn, t * 1000));
       };
@@ -841,7 +974,12 @@
         try {
           const mic = $("recMic").checked ? await navigator.mediaDevices.getUserMedia({ audio: true }) : null;
           const screen = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: false, preferCurrentTab: true });
-          const tracks = [...screen.getVideoTracks(), ...(mic ? mic.getAudioTracks() : [])];
+          // The tones go from the page's audio graph straight into the recording, mixed with the
+          // microphone if it is on. This does not depend on the browser's "share tab audio" option.
+          setSound(true);
+          const ctx = audio(), mix = ctx ? ctx.createMediaStreamDestination() : null;
+          if (mix) { sound.out.connect(mix); if (mic) ctx.createMediaStreamSource(mic).connect(mix); }
+          const tracks = [...screen.getVideoTracks(), ...(mix ? mix.stream.getAudioTracks() : mic ? mic.getAudioTracks() : [])];
           const type = ["video/mp4;codecs=avc1.640028,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm"]
             .find(t => MediaRecorder.isTypeSupported(t));
           const rec = new MediaRecorder(new MediaStream(tracks), { mimeType: type, videoBitsPerSecond: 6e6 });
@@ -849,6 +987,8 @@
           rec.ondataavailable = e => chunks.push(e.data);
           rec.onstop = () => {
             tracks.forEach(t => t.stop());
+            if (mic) mic.getTracks().forEach(t => t.stop());
+            if (mix) sound.out.disconnect(mix);
             const link = document.createElement("a");
             link.href = URL.createObjectURL(new Blob(chunks, { type }));
             link.download = "marswalk-planner-demo." + (type.startsWith("video/mp4") ? "mp4" : "webm");
@@ -865,7 +1005,10 @@
       };
       if (query.has("demo")) {
         if (query.has("rec")) { $("recBar").hidden = false; $("recBtn").onclick = record; }
-        else setTimeout(runTour, 600);
+        else {   // browsers only allow sound after a click, so the tour starts from a button
+          card(TITLE_CARD + '<button type="button" class="walk-btn tour-go" id="tourGo">▶ Play the tour</button>');
+          $("tourGo").onclick = runTour;
+        }
       }
     });
 
