@@ -126,6 +126,105 @@
       .hud-top .row b { display: none; }
       body.walking #tourCap { bottom: 270px; }
     }
+
+    /* Look: minimal "flight display". Glass panels, hairlines, square corners, monospaced numbers.
+       This block only restyles what is defined above; delete it to get the earlier look back. */
+    :root { --glass: rgba(9,10,12,.62); --line: rgba(255,255,255,.14); --muted: #a7a9ad; --text: #f2f3f4;
+            --mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace; }
+    html, body { font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif; }
+    .title, .legend, .plan, .hud-top, .hud-bar, #recBar,
+    .leaflet-popup-content-wrapper, .leaflet-control-layers, .leaflet-bar a {
+      background: var(--glass); color: var(--text); border: 1px solid var(--line); border-radius: 3px;
+      box-shadow: none; -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); }
+    .leaflet-popup-tip { background: rgba(9,10,12,.8); box-shadow: none; }
+    .leaflet-bar { border: 0; box-shadow: none; }
+    .leaflet-bar a, .leaflet-bar a:hover { color: var(--text); border-bottom: 1px solid var(--line); }
+    .leaflet-bar a:hover { background: rgba(232,116,59,.25); }
+    .leaflet-control-layers { font-size: 12px; }
+    .leaflet-control-layers-separator { border-top-color: var(--line); }
+    .leaflet-control-scale-line { background: var(--glass); color: var(--text); border-color: var(--text);
+                                  font-family: var(--mono); font-size: 10px; text-shadow: none; }
+    .leaflet-control-attribution { background: rgba(9,10,12,.55) !important; color: var(--muted); font-size: 10px; }
+    .leaflet-control-attribution a { color: var(--muted); }
+    .leaflet-container a.leaflet-popup-close-button { color: var(--muted); }
+
+    .title { padding: 9px 14px; border-left: 2px solid var(--accent); }
+    .title h1 { font-size: 13px; font-weight: 600; letter-spacing: 3px; }
+    .title p { font-size: 11px; letter-spacing: .3px; }
+    .plan { padding: 14px 16px; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+    .plan .kicker, .plan h3, .stats dt, .hud-cells dt, .leaflet-popup-content b, .legend b {
+      font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: 1.6px; text-transform: uppercase; }
+    .stats dt, .hud-cells dt { color: var(--muted); letter-spacing: 1px; }
+    .plan h2 { font-size: 17px; font-weight: 500; letter-spacing: .2px; }
+    .plan h3 { border-top-color: var(--line); margin-top: 14px; padding-top: 12px; }
+    .stats { gap: 12px 14px; }
+    .stats dd, .hud-cells dd, .timeline time, #hudClock { font-family: var(--mono); font-weight: 500; }
+    .stats dd { font-size: 16px; }
+    .stats dd small, .hud-cells dd small { font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; }
+    .pois button { border-top-color: var(--line); }
+    .dot { border-width: 1.5px; font-family: var(--mono); font-weight: 500; }
+    .ok { color: #4ade80; } .warn { color: #facc15; } .bad { color: #f87171; }
+    .walk-btn { background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 2px;
+                font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 1.6px;
+                text-transform: uppercase; padding: 9px 10px; transition: background .15s, color .15s; }
+    .walk-btn:hover { background: var(--accent); color: #0b0b0c; filter: none; }
+    .tour-link { letter-spacing: .3px; }
+
+    /* HUD: hairline frame with accent corner brackets */
+    .hud-top, .hud-bar { border-color: var(--line); }
+    .hud-top::before, .hud-top::after, .hud-bar::before, .hud-bar::after {
+      content: ""; position: absolute; width: 12px; height: 12px; border: 0 solid var(--accent); pointer-events: none; }
+    .hud-top::before, .hud-bar::before { top: -1px; left: -1px; border-top-width: 2px; border-left-width: 2px; }
+    .hud-top::after, .hud-bar::after { bottom: -1px; right: -1px; border-bottom-width: 2px; border-right-width: 2px; }
+    .hud-top .row { font-size: 11px; letter-spacing: .4px; }
+    .hud-top .row b { font-family: var(--mono); font-weight: 500; letter-spacing: 2px; font-size: 10px; }
+    #hudClock { font-size: 16px; letter-spacing: 1px; }
+    #hudAlert { font-size: 14px; font-weight: 500; letter-spacing: .3px; }
+    .hud-bar { padding: 12px 16px; }
+    .hud-cells { gap: 8px 0; }
+    .hud-cells > div { padding: 0 12px; border-left: 1px solid var(--line); }
+    .hud-cells > div:first-child { padding-left: 0; border-left: 0; }
+    .hud-cells dd { font-size: 18px; }
+    .hud-ctl button, #recBar button { background: transparent; color: var(--text); border: 1px solid var(--line);
+      border-radius: 2px; font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: 1.2px;
+      text-transform: uppercase; }
+    .hud-ctl button:hover, #recBar button:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Tour cards and captions */
+    #tourCard { background: rgba(6,7,9,.8); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+    #tourCard .k { font-family: var(--mono); font-weight: 500; letter-spacing: 3px; font-size: clamp(9px, 1vw, 14px); }
+    #tourCard h2 { font-weight: 300; letter-spacing: .06em; text-transform: uppercase; margin: 22px 0 18px;
+                   font-size: clamp(30px, 6.2vw, 84px); }
+    #tourCard p { font-weight: 300; font-size: clamp(14px, 1.9vw, 26px); letter-spacing: .02em; }
+    #tourCard .m { font-family: var(--mono); letter-spacing: 2px; text-transform: uppercase;
+                   font-size: clamp(10px, 1.05vw, 15px); margin-top: 22px; }
+    #tourCap { background: rgba(6,7,9,.78); border: 1px solid var(--line); border-left: 2px solid var(--accent);
+               border-radius: 2px; font-weight: 400; letter-spacing: .01em; font-size: clamp(15px, 1.9vw, 26px);
+               -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+    /* Second panel (right side, wide screens only) */
+    .plan-b { left: auto; right: 12px; top: 64px; width: 280px; max-height: calc(100% - 224px); z-index: 999; }
+    .plan-b #planMore > h3:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+    @media (min-width: 1101px) { body:not(.walking) #tourCap { max-width: min(940px, calc(100% - 700px)); } }
+
+    /* Route and points: ring markers and a moving direction mark */
+    .dot { position: relative; width: 24px; height: 24px; background: rgba(9,10,12,.86); color: var(--c);
+           border: 1.5px solid var(--c); font-family: var(--mono); font-size: 11px; font-weight: 600;
+           box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 20%, transparent),
+                       0 0 12px color-mix(in srgb, var(--c) 55%, transparent); }
+    .leaflet-marker-icon .dot.pulse::after { content: ""; position: absolute; inset: -1.5px; border-radius: 50%;
+           border: 1.5px solid var(--c); animation: pulse 1.8s ease-out infinite; }
+    @keyframes pulse { to { transform: scale(2.4); opacity: 0; } }
+    .route-flow { animation: flow 1.2s linear infinite; }
+    @keyframes flow { to { stroke-dashoffset: -15; } }
+    @media (prefers-reduced-motion: reduce) { .route-flow, .leaflet-marker-icon .dot.pulse::after { animation: none; } }
+
+    @media (max-width: 700px) {
+      .plan { background: rgba(9,10,12,.86); border-radius: 0; }
+      .hud-bar { border-radius: 0; }
+      .hud-cells > div { padding: 0 8px; }
+      .hud-cells > div:nth-child(3n + 1) { padding-left: 0; border-left: 0; }
+      .hud-cells dd { font-size: 15px; }
+    }
   </style>
 </head>
 <body>
@@ -144,6 +243,7 @@
     <svg id="profile" viewBox="0 0 300 96" role="img" aria-label="Elevation profile of the route"></svg>
     <div id="readout">Move over the profile to walk the route.</div>
     <ul class="pois" id="pois"></ul>
+    <div id="planMore">
     <h3>EVA TIMELINE</h3>
     <ol class="timeline" id="timeline"></ol>
     <p class="fine" id="timelineRule"></p>
@@ -154,7 +254,9 @@
       <summary>Assumptions and sources</summary>
       <div id="notes"></div>
     </details>
+    </div>
   </aside>
+  <aside class="plan plan-b" id="planB" hidden></aside>
 
   <div id="hud" hidden>
     <div class="hud-top">
@@ -215,7 +317,7 @@
     const route = L.layerGroup().addTo(map);
     fetch("data/M20_traverse.json")
       .then(r => r.json())
-      .then(geo => L.geoJSON(geo, { style: { color: "#ffcc33", weight: 2, opacity: 0.85 } }).addTo(route));
+      .then(geo => L.geoJSON(geo, { style: { color: "#ffd166", weight: 1.5, opacity: 0.75 } }).addTo(route));
 
     // Walkability: slope computed from the 20 m CTX DEM (scripts/make_slope.py).
     const slope = L.layerGroup().addTo(map);
@@ -238,7 +340,7 @@
     // EVA plan: base site, walking route and points of interest (scripts/make_route.py).
     const plan = L.layerGroup().addTo(map);
     const CLASS_COLOR = s => s >= 20 ? "#e74c3c" : s >= 10 ? "#f1c40f" : "#2ecc71";
-    const POI_COLOR = { base: "#3498db", ramp: "#9b59b6", wall: "#e74c3c", goal: "#e8743b" };
+    const POI_COLOR = { base: "#5ab8ff", ramp: "#b58cff", wall: "#f87171", goal: "#e8743b" };
     const km = m => (m / 1000).toFixed(2) + " km";
     // Leaflet draws L.circle with Earth's radius even on a custom CRS, so we scale metres to Mars.
     const marsCircle = (latlng, metres, style) =>
@@ -250,22 +352,25 @@
 
       // Map: flat zone of the base, straight line (for comparison) and the route coloured by slope.
       marsCircle(ll(d.base), d.base.flat_radius_m,
-                 { color: "#3498db", weight: 1.5, dashArray: "5 5", fillOpacity: 0.08, interactive: false }).addTo(plan);
+                 { color: "#5ab8ff", weight: 1, dashArray: "2 6", fillOpacity: 0.06, interactive: false }).addTo(plan);
       L.polyline([ll(d.base), ll(d.goal)],
-                 { color: "#fff", weight: 1.5, opacity: 0.7, dashArray: "4 7", interactive: false }).addTo(plan);
-      L.polyline(pts.map(ll), { color: "#000", weight: 7, opacity: 0.55, interactive: false }).addTo(plan);
+                 { color: "#fff", weight: 1, opacity: 0.55, dashArray: "1 6", interactive: false }).addTo(plan);
+      L.polyline(pts.map(ll), { color: "#05060a", weight: 9, opacity: 0.5, interactive: false }).addTo(plan);
       for (let i = 1; i < pts.length; i++)
         L.polyline([ll(pts[i - 1]), ll(pts[i])],
-                   { color: CLASS_COLOR(Math.max(pts[i - 1].slope_deg, pts[i].slope_deg)), weight: 4,
+                   { color: CLASS_COLOR(Math.max(pts[i - 1].slope_deg, pts[i].slope_deg)), weight: 3,
                      interactive: false }).addTo(plan);
+      // Small white marks that move from the base to the goal, to show the direction of the walk.
+      L.polyline(pts.map(ll), { color: "#fff", weight: 1.2, opacity: 0.9, dashArray: "1 14", className: "route-flow",
+                                interactive: false }).addTo(plan);
 
       // Points of interest: numbered markers on the map and a list in the panel.
       const list = document.getElementById("pois");
       let pending = null;
       d.pois.forEach((p, i) => {
-        const dot = `<span class="dot" style="background:${POI_COLOR[p.id]}">${i + 1}</span>`;
+        const dot = `<span class="dot${p.id === "goal" ? " pulse" : ""}" style="--c:${POI_COLOR[p.id]}">${i + 1}</span>`;
         const where = p.dist_m === null ? "off the route" : p.dist_m === 0 ? "start" : km(p.dist_m) + " from base";
-        const marker = L.marker(ll(p), { icon: L.divIcon({ html: dot, className: "", iconSize: [22, 22] }),
+        const marker = L.marker(ll(p), { icon: L.divIcon({ html: dot, className: "", iconSize: [24, 24] }),
                                          zIndexOffset: p.id === "goal" ? 1000 : 0 })
           .bindPopup(`<b>${p.role.toUpperCase()}</b><br><strong>${p.name}</strong><br>` +
                      (p.photo ? `<img class="poi-photo" src="${p.photo.src}" alt="${p.photo.alt}" width="768" height="559">` +
@@ -332,7 +437,7 @@
       d.pois.forEach((p, i) => {
         if (p.dist_m === null) return;
         const near = pts.reduce((b, q) => Math.abs(q.dist_m - p.dist_m) < Math.abs(b.dist_m - p.dist_m) ? q : b);
-        svg += `<circle cx="${x(near.dist_m)}" cy="${y(near.elev_m)}" r="4" fill="${POI_COLOR[p.id]}" stroke="#fff"/>`;
+        svg += `<circle cx="${x(near.dist_m)}" cy="${y(near.elev_m)}" r="4" fill="#0b0c0e" stroke="${POI_COLOR[p.id]}" stroke-width="1.5"/>`;
       });
       svg += `<text x="${padL}" y="10" fill="#b9a59c" font-size="9">Elevation: ${Math.round(Math.min(...elev))} to ${Math.round(Math.max(...elev))} m</text>` +
              `<text x="${padL}" y="${H - 4}" fill="#b9a59c" font-size="9">Base</text>` +
@@ -341,7 +446,7 @@
       const profile = document.getElementById("profile"), readout = document.getElementById("readout");
       profile.innerHTML = svg;
       const cursor = document.getElementById("cursor");
-      const walker = L.circleMarker(ll(pts[0]), { radius: 6, color: "#fff", weight: 2, fillColor: "#e8743b", fillOpacity: 1 });
+      const walker = L.circleMarker(ll(pts[0]), { radius: 6, color: "#e8743b", weight: 2, fillColor: "#0b0c0e", fillOpacity: 1 });
       const walkTo = clientX => {
         const box = profile.getBoundingClientRect();
         const m = Math.min(st.length_m, Math.max(0, ((clientX - box.left) / box.width * W - padL) / (W - padL - padR) * st.length_m));
@@ -357,12 +462,22 @@
 
       // Show the panel and fit the map to the route, leaving room for the panel on wide screens.
       const panel = document.getElementById("plan");
-      panel.hidden = false;
+      // On wide screens the timeline, the radiation numbers and the sources go to a second panel
+      // on the right, so the left panel is not crowded. On small screens everything stays in one panel.
+      const panelB = document.getElementById("planB"), more = document.getElementById("planMore");
+      const split = () => window.innerWidth > 1100;
+      const showPanels = on => {
+        panel.hidden = !on;
+        (split() ? panelB : panel).appendChild(more);
+        panelB.hidden = !on || !split();
+      };
+      showPanels(true);
+      window.addEventListener("resize", () => showPanels(!panel.hidden));
       const fitRoute = (fly = 0) => {
         const wide = window.innerWidth > 700;
         const bounds = L.latLngBounds(pts.map(ll)), opts = {
           paddingTopLeft: wide ? [(panel.offsetWidth || 310) + 40, 90] : [30, 70],
-          paddingBottomRight: wide ? [200, 60] : [30, (panel.offsetHeight || window.innerHeight * 0.42) + 30],
+          paddingBottomRight: wide ? [split() ? 330 : 200, 60] : [30, (panel.offsetHeight || window.innerHeight * 0.42) + 30],
         };
         if (fly) map.flyToBounds(bounds, { ...opts, duration: fly });
         else map.fitBounds(bounds, { ...opts, animate: false });
@@ -530,7 +645,7 @@
       const showSlope = on => { if (on) { slope.addTo(map); legend.addTo(map); } else { slope.remove(); legend.remove(); } };
       const TOUR = [  // [second, what happens]
         [0, () => {
-          panel.hidden = true; showSlope(false); plan.remove();
+          showPanels(false); showSlope(false); plan.remove();
           map.setView([18.47, 77.40], 12, { animate: false });
           card('<div class="k">NASA SPACE APPS CHALLENGE 2026 · INTERPLANETARY SURVIVAL GUIDE: MARTIAN MAP</div>' +
                "<h2>Marswalk Planner</h2><p>A map that plans a safe walk for the first humans on Mars</p>" +
@@ -539,7 +654,7 @@
         [3.5, () => { card(null); caption("The first crew in Jezero Crater will explore on foot."); }],
         [7.5, () => { showSlope(true); fitRoute(1.6);
                       caption("NASA elevation data shows every slope. A spacesuit handles up to 20°."); }],
-        [12, () => { plan.addTo(map); panel.hidden = false;
+        [12, () => { plan.addTo(map); showPanels(true);
                      caption("The planner picks a flat base and the safest route to Cheyava Falls."); }],
         [16, () => { startWalk({ k: 270, now: true });
                        caption("On the walk: slope ahead, time back to shelter, radiation dose."); }],
@@ -597,7 +712,7 @@
       { "CTX Jezero (6 m)": ctx, "HiRISE Jezero (25 cm)": hirise,
         "THEMIS thermal (day IR)": themis, "Slope (walkability)": slope,
         "EVA plan (base, route, points)": plan, "Perseverance traverse": route },
-      { collapsed: window.innerWidth <= 700 }
+      { collapsed: window.innerWidth <= 700 || window.innerWidth > 1100 }
     ).addTo(map);
     L.control.scale({ imperial: false }).addTo(map);
   </script>
