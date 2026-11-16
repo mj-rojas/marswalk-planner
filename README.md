@@ -21,7 +21,8 @@ the rover could not: map how far the spots extend, choose the best samples and c
   cross 350 m of slopes over 10° and the valley wall.
 - **Route numbers**: walking time, emergency walkback time, climb and descent, time left at the rock
   in a 6-hour EVA, and an elevation profile you can move along.
-- **Four points of interest**, each with a job: shelter, orientation, safety and science.
+- **Four points of interest**, each with a job: shelter, orientation, safety and science. The science
+  stop shows Perseverance's own photo of the rock (NASA Photojournal PIA26368).
 - **EVA timeline**: when the crew reaches each stop and the latest time to start back (05:24 of a
   6-hour EVA).
 - **HUD preview (walk mode)**: press "Walk the route" and a marker walks the route at the planning
@@ -92,6 +93,7 @@ the route and writes `data/route.json`, which the map reads.
 | Perseverance traverse and waypoints | NASA/JPL-Caltech (MMGIS) | https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_traverse.json |
 | Cheyava Falls science | Hurowitz et al. (2025), *Nature* 645, 332–340 | https://doi.org/10.1038/s41586-025-09413-0 |
 | Cheyava Falls, rock size and minerals | NASA/JPL news release, 10 Sept 2025 | https://www.jpl.nasa.gov/news/nasa-says-mars-rover-discovered-potential-biosignature-last-year/ |
+| Photo of Cheyava Falls (18 July 2024, sol 1212) | NASA/JPL-Caltech/MSSS, NASA Photojournal PIA26368 | https://science.nasa.gov/photojournal/perseverance-finds-a-rock-with-leopard-spots/ |
 | Slope limit, EVA length, landing circle | Scoville (2021), NASA NTRS 20210026296 | https://ntrs.nasa.gov/citations/20210026296 |
 | Walking and walkback speeds | Ogilvie et al. (2026), NASA NTRS 20260005410 | https://ntrs.nasa.gov/citations/20260005410 |
 | Surface radiation (Curiosity RAD) | NASA news release 13-366, 9 Dec 2013 | https://www.nasa.gov/press/2013/december/nasa-rover-results-include-first-age-measurement-on-mars-and-help-for-human/ |
@@ -104,7 +106,7 @@ Map library: [Leaflet](https://leafletjs.com/) 1.9.4 (BSD-2-Clause).
 
 The code, the texts (this README, the map panel) and the demo slides were written with AI assistance
 (Claude, Anthropic), which also helped find and read the NASA sources. No AI runs inside the map and
-no image is AI-generated: the slides use screenshots of the live map.
+no image is AI-generated: the slides use screenshots of the live map, and the photo of the rock is NASA's.
 
 ## License
 

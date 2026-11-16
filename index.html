@@ -107,6 +107,9 @@
     .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--panel); color: var(--text); }
     .leaflet-popup-content { font-size: 13px; line-height: 1.45; }
     .leaflet-popup-content b { color: var(--accent); font-size: 11px; letter-spacing: 1px; }
+    .poi-photo { display: block; width: 100%; height: auto; margin: 6px 0 3px; border-radius: 4px; }
+    .poi-credit { display: block; margin-bottom: 6px; color: var(--muted); }
+    .poi-credit a { color: var(--muted); }
     @media (max-width: 700px) {
       .plan { top: auto; bottom: 0; left: 0; width: 100%; height: 42%; max-height: none;
               border-radius: 12px 12px 0 0; background: var(--panel); }
@@ -258,17 +261,30 @@
 
       // Points of interest: numbered markers on the map and a list in the panel.
       const list = document.getElementById("pois");
+      let pending = null;
       d.pois.forEach((p, i) => {
         const dot = `<span class="dot" style="background:${POI_COLOR[p.id]}">${i + 1}</span>`;
         const where = p.dist_m === null ? "off the route" : p.dist_m === 0 ? "start" : km(p.dist_m) + " from base";
         const marker = L.marker(ll(p), { icon: L.divIcon({ html: dot, className: "", iconSize: [22, 22] }),
                                          zIndexOffset: p.id === "goal" ? 1000 : 0 })
-          .bindPopup(`<b>${p.role.toUpperCase()}</b><br><strong>${p.name}</strong><br>${p.text}` +
-                     `<br><small>${where} · elevation ${p.elev_m} m</small>`, { maxWidth: 260 })
+          .bindPopup(`<b>${p.role.toUpperCase()}</b><br><strong>${p.name}</strong><br>` +
+                     (p.photo ? `<img class="poi-photo" src="${p.photo.src}" alt="${p.photo.alt}" width="768" height="559">` +
+                                `<small class="poi-credit">${p.photo.caption} <a href="${p.photo.url}" target="_blank" ` +
+                                `rel="noopener">${p.photo.credit}</a></small>` : "") +
+                     `${p.text}<br><small>${where} · elevation ${p.elev_m} m</small>`, { maxWidth: p.photo ? 300 : 260,
+                       // On a phone the panel covers the lower part of the map: keep the card short and scrollable.
+                       maxHeight: window.innerWidth <= 700 ? Math.round(window.innerHeight * 0.58 - 110) : undefined })
           .addTo(plan);
         const li = document.createElement("li");
         li.innerHTML = `<button type="button">${dot}<span>${p.name}<small>${p.role} · ${where}</small></span></button>`;
-        li.firstChild.onclick = () => { map.flyTo(ll(p), 16, { duration: 0.8 }); marker.openPopup(); };
+        // Open the card once the map has arrived, so Leaflet can pan to fit the whole card on screen.
+        li.firstChild.onclick = () => {
+          map.closePopup();
+          if (map.getZoom() === 16 && map.getCenter().distanceTo(ll(p)) < 5) return marker.openPopup();
+          pending = marker;  // only the last point clicked opens its card
+          map.once("moveend", () => { if (pending === marker) { pending = null; marker.openPopup(); } });
+          map.flyTo(ll(p), 16, { duration: 0.8 });
+        };
         list.appendChild(li);
       });
 

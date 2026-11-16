@@ -65,6 +65,9 @@ SOURCES = [
     {"what": "Cheyava Falls, NASA release",
      "cite": "NASA/JPL, 10 Sept 2025",
      "url": "https://www.jpl.nasa.gov/news/nasa-says-mars-rover-discovered-potential-biosignature-last-year/"},
+    {"what": "Photo of Cheyava Falls (Perseverance, 18 July 2024, sol 1212)",
+     "cite": "NASA Photojournal PIA26368, NASA/JPL-Caltech/MSSS",
+     "url": "https://science.nasa.gov/photojournal/perseverance-finds-a-rock-with-leopard-spots/"},
     {"what": "Rover position at the rock",
      "cite": "NASA/JPL-Caltech, M20 waypoints",
      "url": "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints.json"},
@@ -243,7 +246,12 @@ pois = [
      "text": "A 1 m rock with \"leopard spots\" (the minerals vivianite and greigite): a potential "
              "biosignature found by Perseverance in July 2024. Not confirmed: non-biological origins are "
              "not ruled out. Crew task: map how far the spots extend, choose the best samples and carry "
-             f"them back. The last metres climb at up to {stats['max_slope_deg']}°."},
+             f"them back. The last metres climb at up to {stats['max_slope_deg']}°.",
+     "photo": {"src": "img/cheyava-falls-PIA26368.jpg",
+               "alt": "Close-up of the rock Cheyava Falls: white veins and a reddish band with small dark-ringed spots",
+               "caption": "Cheyava Falls, photographed by Perseverance on 18 July 2024.",
+               "credit": "NASA/JPL-Caltech/MSSS · PIA26368",
+               "url": "https://science.nasa.gov/photojournal/perseverance-finds-a-rock-with-leopard-spots/"}},
 ]
 
 out = {
