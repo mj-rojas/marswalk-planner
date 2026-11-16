@@ -882,7 +882,9 @@
           let length = 0, steepest = 0;
           smooth.forEach(([pr, pc], n) => {
             if (n) length += Math.hypot((pr - smooth[n - 1][0]) * G.cell_m, (pc - smooth[n - 1][1]) * dxRow(Math.floor(pr)));
-            steepest = Math.max(steepest, sample(pr, pc));
+            // Slope of the cell the route really crosses (every one is under the suit limit), not a blend
+            // with the neighbours, which could show more than the limit beside a GO verdict.
+            steepest = Math.max(steepest, deg(cells[n][0] * C + cells[n][1]));
           });
           const walkback = length / 1000 / a.speed_walkback_kmh * 60, short = G.walkback_limit_min, long = G.walkback_max_min;
           const level = walkback <= short ? "go" : walkback <= long ? "margin" : "nogo", go = level !== "nogo";
@@ -905,7 +907,7 @@
       if (farIndex >= 0) {
         const far = d.pois[farIndex];
         $("farChip").innerHTML = `<span class="dot" style="--c:${POI_COLOR.depot}">${farIndex + 1}</span>` +
-          `<span>${far.name.split(":")[0]}<small>no-go · ${km(metres(d.base, far))} east</small></span><b>→</b>`;
+          `<span>${far.name.split(":")[0]}<small>no-go · ${(metres(d.base, far) / 1000).toFixed(1)} km ${COMPASS[Math.round(bearing(d.base, far) / 45) % 8]}</small></span><b>→</b>`;
         $("farChip").hidden = false;
         $("farChip").onclick = () => list.children[farIndex].firstChild.click();
       }
@@ -963,7 +965,7 @@
           beep(SOUNDS.go); setTimeout(() => beep(SOUNDS.nogo), 1300);
           caption("It also says when not to go: too steep, or too far from shelter.");
         }],
-        [17, () => { custom.clearLayers(); startWalk({ k: 300, now: true });
+        [17, () => { custom.clearLayers(); startWalk({ k: 340, now: true });
                      caption("On the walk: slope ahead, time back to shelter, radiation dose."); }],
         [25.2, () => { caption(null);
           card('<div class="k">EVERY NUMBER IS CITED TO A NASA SOURCE OR MARKED AS OUR OWN ASSUMPTION</div>' +
@@ -974,6 +976,7 @@
         [30, () => { card(null); exitWalk(); document.body.classList.remove("tour"); setWind(false); }],
       ];
       const runTour = () => {
+        map.closePopup(); custom.clearLayers();   // nothing left open from before the tour
         if (!$("hud").hidden) exitWalk();
         document.body.classList.add("tour");
         setWind(true);

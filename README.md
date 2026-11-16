@@ -21,7 +21,7 @@ the rover could not: map how far the spots extend, choose the best samples and c
   cross 350 m of slopes over 10° and the valley wall.
 - **Route numbers**: walking time, emergency walkback time, climb and descent, time left at the rock
   in a 6-hour EVA, and an elevation profile you can move along.
-- **Four points of interest**, each with a job: shelter, orientation, safety and science. The science
+- **Five points of interest**, each with a job: shelter, orientation, safety, science and one out of range. The science
   stop shows Perseverance's own photo of the rock (NASA Photojournal PIA26368).
 - **GO / NO-GO for any destination**: click any point on the map and the planner computes the walk from
   the base in your browser, with the same rules as EVA 01. It answers with one of three verdicts and
