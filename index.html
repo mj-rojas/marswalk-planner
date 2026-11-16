@@ -203,6 +203,9 @@
                -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
     /* Second panel (right side, wide screens only) */
     .plan-b { left: auto; right: 12px; top: 64px; width: 280px; max-height: calc(100% - 224px); z-index: 999; }
+    /* While the layers list is open, the panel slides down so the list does not cover it. */
+    .plan-b { transition: top .2s ease; }
+    body:has(.leaflet-control-layers-expanded) .plan-b { top: 224px; max-height: calc(100% - 384px); }
     .plan-b #planMore > h3:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
     @media (min-width: 1101px) { body:not(.walking) #tourCap { max-width: min(940px, calc(100% - 700px)); } }
 
