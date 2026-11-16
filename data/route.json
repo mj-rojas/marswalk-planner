@@ -59,6 +59,16 @@
     "credit": "NASA/JPL-Caltech/MSSS · PIA26368",
     "url": "https://science.nasa.gov/photojournal/perseverance-finds-a-rock-with-leopard-spots/"
    }
+  },
+  {
+   "id": "depot",
+   "role": "Out of range",
+   "name": "Three Forks depot: no-go",
+   "lat": 18.45272,
+   "lon": 77.40807,
+   "elev_m": -2546.6,
+   "dist_m": null,
+   "text": "Perseverance left 10 sample tubes here (depot completed on 28 January 2023). It is 5.9 km from the base in a straight line: an emergency walkback of at least 100 min, far over the 30 min design case. No-go on foot from this base: it needs a rover or a closer base. The position is the rover's waypoint while it built the depot (sols 652–686), not the position of each tube."
   }
  ],
  "stats": {
@@ -125,6 +135,11 @@
    "what": "Photo of Cheyava Falls (Perseverance, 18 July 2024, sol 1212)",
    "cite": "NASA Photojournal PIA26368, NASA/JPL-Caltech/MSSS",
    "url": "https://science.nasa.gov/photojournal/perseverance-finds-a-rock-with-leopard-spots/"
+  },
+  {
+   "what": "Three Forks sample depot (10 tubes, completed on 28 Jan 2023)",
+   "cite": "NASA/JPL news release, 28 Jan 2023",
+   "url": "https://www.jpl.nasa.gov/news/nasas-perseverance-rover-completes-mars-sample-depot/"
   },
   {
    "what": "Rover position at the rock",

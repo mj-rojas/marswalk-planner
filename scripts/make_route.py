@@ -32,6 +32,10 @@ ROOT = Path(__file__).resolve().parent.parent
 # Rover position while it worked on Cheyava Falls (sols 1210–1218, M20_waypoints.json).
 # The core "Sapphire Canyon" was sealed on sol 1215 (21 July 2024).
 GOAL = {"lat": 18.49748, "lon": 77.30519}
+# Rover waypoint while it built the Three Forks sample depot (sols 652–686, M20_waypoints.json).
+# It is not the position of each tube: the 10 tubes lie 5 to 15 m apart around it.
+DEPOT = {"lat": 18.45272, "lon": 77.40807}
+WALKBACK_LIMIT_MIN = 30   # shortest walkback design case in Ogilvie et al. (2026)
 
 SUIT_LIMIT_DEG = 20.0     # suited astronaut must walk up, down and across 20° (NASA xEVA SRD, via Scoville 2021)
 CAREFUL_DEG = 10.0        # our own margin: half of the suit limit
@@ -68,6 +72,9 @@ SOURCES = [
     {"what": "Photo of Cheyava Falls (Perseverance, 18 July 2024, sol 1212)",
      "cite": "NASA Photojournal PIA26368, NASA/JPL-Caltech/MSSS",
      "url": "https://science.nasa.gov/photojournal/perseverance-finds-a-rock-with-leopard-spots/"},
+    {"what": "Three Forks sample depot (10 tubes, completed on 28 Jan 2023)",
+     "cite": "NASA/JPL news release, 28 Jan 2023",
+     "url": "https://www.jpl.nasa.gov/news/nasas-perseverance-rover-completes-mars-sample-depot/"},
     {"what": "Rover position at the rock",
      "cite": "NASA/JPL-Caltech, M20 waypoints",
      "url": "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints.json"},
@@ -217,6 +224,11 @@ stats["straight_line_careful_m"] = 10 * sum(s >= CAREFUL_DEG for s in line_slope
 stats["route_careful_m"] = round(sum(d for d, s in seg if s >= CAREFUL_DEG))
 stats["detour_m"] = stats["length_m"] - stats["straight_line_m"]
 
+# ---- Three Forks: a place the crew cannot reach on foot from this base (too far) -------------------
+depot_r, depot_c = t.cell(DEPOT["lat"], DEPOT["lon"])
+depot_straight_m = math.hypot((depot_r - (r0 + base[0])) * t.dy, (depot_c - (c0 + base[1])) * dx_row[half])
+depot_walkback_min = round(60 * hours(depot_straight_m / 1000, SPEED_WALKBACK_KMH))
+
 # ---- Points of interest: few, each with a job ----------------------------------------------------
 # The ramp is the steepest point of the route before the final approach to the rock.
 ramp = max((p for p in route if p["dist_m"] < length - 150), key=lambda p: p["slope_deg"])
@@ -252,6 +264,13 @@ pois = [
                "caption": "Cheyava Falls, photographed by Perseverance on 18 July 2024.",
                "credit": "NASA/JPL-Caltech/MSSS · PIA26368",
                "url": "https://science.nasa.gov/photojournal/perseverance-finds-a-rock-with-leopard-spots/"}},
+    {"id": "depot", "role": "Out of range", "name": "Three Forks depot: no-go",
+     "lat": DEPOT["lat"], "lon": DEPOT["lon"], "elev_m": round(float(z[depot_r, depot_c]), 1), "dist_m": None,
+     "text": "Perseverance left 10 sample tubes here (depot completed on 28 January 2023). It is "
+             f"{depot_straight_m / 1000:.1f} km from the base in a straight line: an emergency walkback of "
+             f"at least {depot_walkback_min} min, far over the {WALKBACK_LIMIT_MIN} min design case. No-go on "
+             "foot from this base: it needs a rover or a closer base. The position is the rover's waypoint "
+             "while it built the depot (sols 652–686), not the position of each tube."},
 ]
 
 out = {

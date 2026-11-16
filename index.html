@@ -202,12 +202,35 @@
                border-radius: 2px; font-weight: 400; letter-spacing: .01em; font-size: clamp(15px, 1.9vw, 26px);
                -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
     /* Second panel (right side, wide screens only) */
-    .plan-b { left: auto; right: 12px; top: 64px; width: 280px; max-height: calc(100% - 224px); z-index: 999; }
+    .plan-b { left: auto; right: 12px; top: 64px; width: 280px; max-height: calc(100% - 276px); z-index: 999; }
     /* While the layers list is open, the panel slides down so the list does not cover it. */
     .plan-b { transition: top .2s ease; }
-    body:has(.leaflet-control-layers-expanded) .plan-b { top: 224px; max-height: calc(100% - 384px); }
+    body:has(.leaflet-control-layers-expanded) .plan-b { top: 224px; max-height: calc(100% - 436px); }
     .plan-b #planMore > h3:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
     @media (min-width: 1101px) { body:not(.walking) #tourCap { max-width: min(940px, calc(100% - 700px)); } }
+
+    /* Pointer to the far point (Three Forks), on the right edge */
+    .far-chip { position: absolute; right: 12px; bottom: 150px; z-index: 999; display: flex; gap: 10px; align-items: center;
+                padding: 7px 12px 7px 9px; cursor: pointer; font: inherit; font-size: 12px; text-align: left;
+                color: var(--text); background: var(--glass); border: 1px solid var(--line);
+                border-right: 2px solid #f87171; border-radius: 3px;
+                -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); }
+    .far-chip[hidden] { display: none; }
+    .far-chip small { display: block; color: var(--muted); font-size: 11px; }
+    .far-chip b { color: #f87171; font-size: 16px; }
+    .far-chip:hover { border-color: #f87171; }
+    body.walking .far-chip, body.tour .far-chip { display: none; }
+    @media (max-width: 700px) { .far-chip { display: none; } }
+
+    /* Click-to-plan card and verdict labels */
+    .plan .hint { margin: -4px 0 12px; }
+    .verdict { margin: 4px 0 2px; font-family: var(--mono); font-size: 22px; font-weight: 600; letter-spacing: 2px; }
+    .leaflet-popup-content .stats { margin: 8px 0 6px; }
+    .leaflet-popup-content .stats dd { font-size: 14px; }
+    .tip { background: rgba(9,10,12,.86); color: var(--text); border: 1px solid var(--line); border-radius: 2px;
+           box-shadow: none; font-family: var(--mono); font-size: 12px; letter-spacing: 1px; padding: 4px 8px; }
+    .tip.go { border-left: 2px solid #4ade80; } .tip.nogo { border-left: 2px solid #f87171; }
+    .tip::before { display: none; }
 
     /* Route and points: ring markers and a moving direction mark */
     .dot { position: relative; width: 24px; height: 24px; background: rgba(9,10,12,.86); color: var(--c);
@@ -242,6 +265,7 @@
     <h2>Crew base → Cheyava Falls</h2>
     <button type="button" class="walk-btn" id="walkBtn">▶ Walk the route · HUD preview</button>
     <a class="tour-link" href="?demo">or watch the 30-second tour</a>
+    <p class="fine hint">Click any point on the map: the planner answers GO or NO-GO for a walk from the base.</p>
     <dl class="stats" id="stats"></dl>
     <svg id="profile" viewBox="0 0 300 96" role="img" aria-label="Elevation profile of the route"></svg>
     <div id="readout">Move over the profile to walk the route.</div>
@@ -278,6 +302,7 @@
     </div>
   </div>
 
+  <button type="button" id="farChip" class="far-chip" hidden></button>
   <div id="tourCard" hidden></div>
   <div id="tourCap" hidden></div>
   <div id="recBar" hidden>
@@ -343,13 +368,17 @@
     // EVA plan: base site, walking route and points of interest (scripts/make_route.py).
     const plan = L.layerGroup().addTo(map);
     const CLASS_COLOR = s => s >= 20 ? "#e74c3c" : s >= 10 ? "#f1c40f" : "#2ecc71";
-    const POI_COLOR = { base: "#5ab8ff", ramp: "#b58cff", wall: "#f87171", goal: "#e8743b" };
+    const POI_COLOR = { base: "#5ab8ff", ramp: "#b58cff", wall: "#f87171", goal: "#e8743b", depot: "#f87171" };
     const km = m => (m / 1000).toFixed(2) + " km";
     // Leaflet draws L.circle with Earth's radius even on a custom CRS, so we scale metres to Mars.
     const marsCircle = (latlng, metres, style) =>
       L.circle(latlng, { radius: metres * 6371000 / MARS_CRS.R, ...style });
 
     fetch("data/route.json").then(r => r.json()).then(d => {
+      // Cards pan the map so they open in the free space between the side panels, not under them.
+      const clearOfPanels = () => ({
+        autoPanPaddingTopLeft: [window.innerWidth > 700 ? 340 : 10, 70],
+        autoPanPaddingBottomRight: [window.innerWidth > 1100 ? 310 : 10, 20] });
       const pts = d.route, st = d.stats, a = d.assumptions;
       const ll = p => [p.lat, p.lon];
 
@@ -370,6 +399,7 @@
       // Points of interest: numbered markers on the map and a list in the panel.
       const list = document.getElementById("pois");
       let pending = null;
+      const farRoute = L.layerGroup().addTo(map);   // red route to a point that is out of range
       d.pois.forEach((p, i) => {
         const dot = `<span class="dot${p.id === "goal" ? " pulse" : ""}" style="--c:${POI_COLOR[p.id]}">${i + 1}</span>`;
         const where = p.dist_m === null ? "off the route" : p.dist_m === 0 ? "start" : km(p.dist_m) + " from base";
@@ -379,10 +409,15 @@
                      (p.photo ? `<img class="poi-photo" src="${p.photo.src}" alt="${p.photo.alt}" width="768" height="559">` +
                                 `<small class="poi-credit">${p.photo.caption} <a href="${p.photo.url}" target="_blank" ` +
                                 `rel="noopener">${p.photo.credit}</a></small>` : "") +
-                     `${p.text}<br><small>${where} · elevation ${p.elev_m} m</small>`, { maxWidth: p.photo ? 300 : 260,
+                     `${p.text}<br><small>${where} · elevation ${p.elev_m} m</small>`, { maxWidth: p.photo ? 300 : 260, ...clearOfPanels(),
                        // On a phone the panel covers the lower part of the map: keep the card short and scrollable.
                        maxHeight: window.innerWidth <= 700 ? Math.round(window.innerHeight * 0.58 - 110) : undefined })
           .addTo(plan);
+        if (p.id === "depot") {   // while its card is open, show the walk the planner rejects
+          marker.on("popupopen", () => { const far = planner && planner(L.latLng(p.lat, p.lon));
+                                         farRoute.clearLayers(); if (far) drawPlan(far, farRoute); });
+          marker.on("popupclose", () => farRoute.clearLayers());
+        }
         const li = document.createElement("li");
         li.innerHTML = `<button type="button">${dot}<span>${p.name}<small>${p.role} · ${where}</small></span></button>`;
         // Open the card once the map has arrived, so Leaflet can pan to fit the whole card on screen.
@@ -391,7 +426,8 @@
           if (map.getZoom() === 16 && map.getCenter().distanceTo(ll(p)) < 5) return marker.openPopup();
           pending = marker;  // only the last point clicked opens its card
           map.once("moveend", () => { if (pending === marker) { pending = null; marker.openPopup(); } });
-          map.flyTo(ll(p), 16, { duration: 0.8 });
+          if (p.id === "depot") fitRoute(0.8, [p]);   // far point: show it together with the base
+          else map.flyTo(ll(p), 16, { duration: 0.8 });
         };
         list.appendChild(li);
       });
@@ -476,9 +512,9 @@
       };
       showPanels(true);
       window.addEventListener("resize", () => showPanels(!panel.hidden));
-      const fitRoute = (fly = 0) => {
+      const fitRoute = (fly = 0, extra = []) => {   // extra: more points that must stay in view
         const wide = window.innerWidth > 700;
-        const bounds = L.latLngBounds(pts.map(ll)), opts = {
+        const bounds = L.latLngBounds(pts.map(ll).concat(extra.map(ll))), opts = {
           paddingTopLeft: wide ? [(panel.offsetWidth || 310) + 40, 90] : [30, 70],
           paddingBottomRight: wide ? [split() ? 330 : 200, 60] : [30, (panel.offsetHeight || window.innerHeight * 0.42) + 30],
         };
@@ -641,6 +677,111 @@
       const query = new URLSearchParams(location.search);
       if (query.has("walk")) startWalk();
 
+      // Click-to-plan: a walk from the base to any point, computed in the browser with the same rules as
+      // scripts/make_route.py (cost = distance × (1 + (slope / 10°)²), nothing over the suit limit).
+      // The verdict is NO-GO if the point is too steep, cannot be reached, or the emergency walkback
+      // is longer than the 30 min design case.
+      const custom = L.layerGroup().addTo(map);
+      let planner = null;   // set when the slope grid has loaded
+      Promise.all([fetch("data/slope_grid.json").then(r => r.json()),
+                   fetch("data/slope_grid.bin").then(r => r.arrayBuffer())]).then(([G, buf]) => {
+        const S = new Uint16Array(buf), R = G.rows, C = G.cols, N = R * C;
+        const deg = i => S[i] / G.scale, ok = i => S[i] !== G.nodata && deg(i) < a.suit_limit_deg;
+        const pen = i => 1 + (deg(i) / a.careful_deg) ** 2;
+        const dxRow = r => G.cell_m * Math.cos((G.north - (r + 0.5) * G.dlat) * RAD);
+        const cellOf = (lat, lon) => [Math.floor((G.north - lat) / G.dlat), Math.floor((lon - G.west) / G.dlon)];
+        const sample = (r, c) => {   // bilinear, like Terrain.sample
+          const r0 = Math.min(R - 2, Math.max(0, Math.floor(r))), c0 = Math.min(C - 2, Math.max(0, Math.floor(c)));
+          const fr = r - r0, fc = c - c0, v = (dr, dc) => deg((r0 + dr) * C + c0 + dc);
+          return v(0, 0) * (1 - fr) * (1 - fc) + v(0, 1) * (1 - fr) * fc + v(1, 0) * fr * (1 - fc) + v(1, 1) * fr * fc;
+        };
+        // Dijkstra from the base to every cell, once. A small binary heap keeps it fast.
+        const cost = new Float64Array(N).fill(Infinity), prev = new Int32Array(N).fill(-1);
+        const hc = [], hx = [];
+        const push = (c, i) => { let k = hc.length; hc.push(c); hx.push(i);
+          while (k > 0) { const q = (k - 1) >> 1; if (hc[q] <= c) break; hc[k] = hc[q]; hx[k] = hx[q]; k = q; }
+          hc[k] = c; hx[k] = i; };
+        const pop = () => { const top = hx[0], c = hc.pop(), i = hx.pop(), n = hc.length;
+          if (n) { let k = 0;
+            for (;;) { let j = 2 * k + 1; if (j >= n) break; if (j + 1 < n && hc[j + 1] < hc[j]) j++;
+                       if (hc[j] >= c) break; hc[k] = hc[j]; hx[k] = hx[j]; k = j; }
+            hc[k] = c; hx[k] = i; }
+          return top; };
+        const [br, bc] = cellOf(d.base.lat, d.base.lon), start = br * C + bc;
+        cost[start] = 0; push(0, start);
+        while (hc.length) {
+          const c0 = hc[0], i = pop();
+          if (c0 > cost[i]) continue;
+          const r = (i / C) | 0, c = i % C, dx = dxRow(r);
+          for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+            if (!dr && !dc) continue;
+            const rr = r + dr, cc = c + dc, j = rr * C + cc;
+            if (rr < 0 || rr >= R || cc < 0 || cc >= C || !ok(j)) continue;
+            const next = c0 + Math.hypot(dr * G.cell_m, dc * dx) * (pen(i) + pen(j)) / 2;
+            if (next < cost[j]) { cost[j] = next; prev[j] = i; push(next, j); }
+          }
+        }
+        planner = latlng => {
+          const [r, c] = cellOf(latlng.lat, latlng.lng), i = r * C + c;
+          if (r < 0 || r >= R || c < 0 || c >= C) return null;   // outside the planning area
+          const here = S[i] === G.nodata ? null : deg(i);
+          if (!ok(i)) return { go: false, why: here === null ? "There is no elevation data here."
+            : `The ground here slopes ${here.toFixed(1)}°, over the ${a.suit_limit_deg}° limit of the suit.` };
+          if (!isFinite(cost[i])) return { go: false, why: `No route from the base stays under ${a.suit_limit_deg}°.` };
+          const cells = [];
+          for (let k = i; k !== -1; k = prev[k]) cells.push([(k / C) | 0, k % C]);
+          cells.reverse();                                        // base → destination
+          const smooth = cells.map((p, n) => {                    // same 5-point average as make_route.py
+            if (n === 0 || n === cells.length - 1) return p;
+            const part = cells.slice(Math.max(0, n - 2), n + 3);
+            return [part.reduce((t, q) => t + q[0], 0) / part.length, part.reduce((t, q) => t + q[1], 0) / part.length];
+          });
+          let length = 0, steepest = 0;
+          smooth.forEach(([pr, pc], n) => {
+            if (n) length += Math.hypot((pr - smooth[n - 1][0]) * G.cell_m, (pc - smooth[n - 1][1]) * dxRow(Math.floor(pr)));
+            steepest = Math.max(steepest, sample(pr, pc));
+          });
+          const walkback = length / 1000 / a.speed_walkback_kmh * 60, go = walkback <= G.walkback_limit_min;
+          return { go, length, steepest, walkback, walk: length / 1000 / a.speed_plan_kmh * 60, limit: G.walkback_limit_min,
+                   line: smooth.map(([pr, pc]) => [G.north - (pr + 0.5) * G.dlat, G.west + (pc + 0.5) * G.dlon]),
+                   why: go ? `Walkback inside the ${G.walkback_limit_min} min design case and every slope under ${a.suit_limit_deg}°.`
+                           : `Emergency walkback of ${Math.round(walkback)} min, over the ${G.walkback_limit_min} min design case.` };
+        };
+      });
+      const drawPlan = (res, layer = custom) => {   // route to a destination, green for GO and red for NO-GO
+        if (!res.line) return;
+        L.polyline(res.line, { color: "#05060a", weight: 7, opacity: 0.5, interactive: false }).addTo(layer);
+        L.polyline(res.line, { color: res.go ? "#4ade80" : "#f87171", weight: 2.5, dashArray: "6 6", interactive: false }).addTo(layer);
+      };
+
+      // Pointer to the far point (Three Forks), which is outside the first view.
+      const farIndex = d.pois.findIndex(q => q.id === "depot");
+      if (farIndex >= 0) {
+        const far = d.pois[farIndex];
+        $("farChip").innerHTML = `<span class="dot" style="--c:${POI_COLOR.depot}">${farIndex + 1}</span>` +
+          `<span>${far.name.split(":")[0]}<small>no-go · ${km(metres(d.base, far))} east</small></span><b>→</b>`;
+        $("farChip").hidden = false;
+        $("farChip").onclick = () => list.children[farIndex].firstChild.click();
+      }
+      map.on("click", e => {
+        if (!planner || document.body.classList.contains("walking") || document.body.classList.contains("tour")) return;
+        custom.clearLayers();
+        const res = planner(e.latlng);
+        if (!res) return;
+        drawPlan(res);
+        const cell = (k, v, note) => `<div><dt>${k}</dt><dd>${v}<small>${note}</small></dd></div>`;
+        L.popup({ maxWidth: 270, ...clearOfPanels() }).setLatLng(res.line ? res.line[res.line.length - 1] : e.latlng).setContent(
+          `<b>YOUR DESTINATION</b><div class="verdict ${res.go ? "ok" : "bad"}">${res.go ? "GO" : "NO-GO"}</div>${res.why}` +
+          (res.line ? '<dl class="stats">' +
+            cell("Distance", km(res.length), "one way, from the base") +
+            cell("Walking time", `${Math.round(res.walk)} min`, `at ${a.speed_plan_kmh.toFixed(1)} km/h`) +
+            cell("Emergency walkback", `<span class="${res.go ? "ok" : "bad"}">${Math.round(res.walkback)} min</span>`, `limit ${res.limit} min`) +
+            cell("Steepest slope", `<span class="${slopeTag(res.steepest)}">${res.steepest.toFixed(1)}°</span>`, `suit limit ${a.suit_limit_deg}°`) +
+            "</dl>" : "") +
+          '<small class="poi-credit" style="margin-top:6px">Computed in your browser with the same rules as EVA 01. Flat-ground speeds; 20 m grid.</small>'
+        ).on("remove", () => custom.clearLayers()).openOn(map);
+      });
+
       // Tour (index.html?demo): a guided tour of about 28 seconds with captions. It shows the same
       // map, layers and HUD as the normal page; only the camera and the captions are scripted.
       const card = html => { $("tourCard").hidden = !html; $("tourCard").innerHTML = html || ""; };
@@ -654,17 +795,30 @@
                "<h2>Marswalk Planner</h2><p>A map that plans a safe walk for the first humans on Mars</p>" +
                '<p class="m">Team Tharsis Labs · Manuel Rojas</p>');
         }],
-        [3.5, () => { card(null); caption("The first crew in Jezero Crater will explore on foot."); }],
-        [7.5, () => { showSlope(true); fitRoute(1.6);
-                      caption("NASA elevation data shows every slope. A spacesuit handles up to 20°."); }],
-        [12, () => { plan.addTo(map); showPanels(true);
-                     caption("The planner picks a flat base and the safest route to Cheyava Falls."); }],
-        [16, () => { startWalk({ k: 270, now: true });
-                       caption("On the walk: slope ahead, time back to shelter, radiation dose."); }],
+        [3, () => { card(null); caption("The first crew in Jezero Crater will explore on foot."); }],
+        [6, () => { showSlope(true); fitRoute(1.4);
+                    caption("NASA elevation data shows every slope. A spacesuit handles up to 20°."); }],
+        [9.5, () => { plan.addTo(map); showPanels(true);
+                      caption("The planner picks a flat base and the safest route to Cheyava Falls."); }],
+        [13, () => {   // one GO and two NO-GO: the wall (too steep) and Three Forks (too far)
+          const depot = d.pois.find(p => p.id === "depot"), wall = d.pois.find(p => p.id === "wall");
+          const far = planner && planner(L.latLng(depot.lat, depot.lon));
+          const tip = (p, kind, direction, text) =>
+            L.tooltip({ permanent: true, direction, offset: [0, direction === "top" ? -14 : 14], className: "tip " + kind })
+              .setLatLng(ll(p)).setContent(text).addTo(custom);
+          if (far) drawPlan(far);
+          tip(d.goal, "go", "bottom", `GO · ${st.walkback_min} min to shelter`);
+          tip(wall, "nogo", "top", `NO-GO · ${st.straight_line_max_slope_deg}° slope`);
+          tip(depot, "nogo", "top", `NO-GO · ${far && far.line ? Math.round(far.walkback) : "100+"} min to shelter`);
+          fitRoute(1.2, [depot]);
+          caption("It also says when not to go: too steep, or too far from shelter.");
+        }],
+        [17, () => { custom.clearLayers(); startWalk({ k: 300, now: true });
+                     caption("On the walk: slope ahead, time back to shelter, radiation dose."); }],
         [25.2, () => { caption(null);
           card('<div class="k">EVERY NUMBER IS CITED TO A NASA SOURCE OR MARKED AS OUR OWN ASSUMPTION</div>' +
                '<h2 style="font-size:clamp(26px,4.6vw,60px)">Plan the walk before<br>you step outside</h2>' +
-               "<p>Next: more walks · Perseverance photos · AI briefings</p>" +
+               "<p>Next: mineral maps · weather · AI briefings · HUD on the visor</p>" +
                '<p class="m">mj-rojas.github.io/marswalk-planner · open source · Team Tharsis Labs</p>');
         }],
         [30, () => { card(null); exitWalk(); document.body.classList.remove("tour"); }],

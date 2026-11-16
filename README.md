@@ -23,6 +23,12 @@ the rover could not: map how far the spots extend, choose the best samples and c
   in a 6-hour EVA, and an elevation profile you can move along.
 - **Four points of interest**, each with a job: shelter, orientation, safety and science. The science
   stop shows Perseverance's own photo of the rock (NASA Photojournal PIA26368).
+- **GO / NO-GO for any destination**: click any point on the map and the planner computes the walk from
+  the base in your browser, with the same rules as EVA 01. It answers GO or NO-GO and says why: a slope
+  over 20°, or an emergency walkback longer than the 30-minute design case.
+- **Two fixed no-go examples**: the valley wall (too steep, 20.4°) and the Three Forks sample depot
+  (too far: 5.9 km in a straight line, a walkback of at least 100 minutes). The depot marker is the
+  rover's waypoint while it built the depot (sols 652–686), not the position of each tube.
 - **EVA timeline**: when the crew reaches each stop and the latest time to start back (05:24 of a
   6-hour EVA).
 - **HUD preview (walk mode)**: press "Walk the route" and a marker walks the route at the planning
@@ -75,8 +81,10 @@ python -m venv .venv
 .venv/Scripts/python -m pip install numpy tifffile pillow
 .venv/Scripts/python scripts/make_slope.py
 .venv/Scripts/python scripts/make_route.py
+.venv/Scripts/python scripts/make_grid.py
 ```
 
+`make_grid.py` writes the slope grid the browser uses to plan a walk to any point (`data/slope_grid.bin`).
 `make_slope.py` writes the slope overlay (`data/slope.png`). `make_route.py` picks the base, computes
 the route and writes `data/route.json`, which the map reads.
 
@@ -94,6 +102,7 @@ the route and writes `data/route.json`, which the map reads.
 | Cheyava Falls science | Hurowitz et al. (2025), *Nature* 645, 332–340 | https://doi.org/10.1038/s41586-025-09413-0 |
 | Cheyava Falls, rock size and minerals | NASA/JPL news release, 10 Sept 2025 | https://www.jpl.nasa.gov/news/nasa-says-mars-rover-discovered-potential-biosignature-last-year/ |
 | Photo of Cheyava Falls (18 July 2024, sol 1212) | NASA/JPL-Caltech/MSSS, NASA Photojournal PIA26368 | https://science.nasa.gov/photojournal/perseverance-finds-a-rock-with-leopard-spots/ |
+| Three Forks sample depot (10 tubes, completed 28 Jan 2023) | NASA/JPL news release | https://www.jpl.nasa.gov/news/nasas-perseverance-rover-completes-mars-sample-depot/ |
 | Slope limit, EVA length, landing circle | Scoville (2021), NASA NTRS 20210026296 | https://ntrs.nasa.gov/citations/20210026296 |
 | Walking and walkback speeds | Ogilvie et al. (2026), NASA NTRS 20260005410 | https://ntrs.nasa.gov/citations/20260005410 |
 | Surface radiation (Curiosity RAD) | NASA news release 13-366, 9 Dec 2013 | https://www.nasa.gov/press/2013/december/nasa-rover-results-include-first-age-measurement-on-mars-and-help-for-human/ |
