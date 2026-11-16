@@ -6,6 +6,7 @@ A web map that helps the first human explorers plan safe walks in Jezero Crater,
 using real NASA orbital imagery, terrain data and Perseverance's actual route.
 
 - **Live map:** https://mj-rojas.github.io/marswalk-planner/
+- **Demo video (29 s):** https://mj-rojas.github.io/marswalk-planner/demo/marswalk-planner-demo.mp4
 - **Demo slides (7):** https://mj-rojas.github.io/marswalk-planner/slides/marswalk-planner-demo.pdf
 
 ## What it does (so far)
